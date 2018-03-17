@@ -1,42 +1,48 @@
+import javafx.scene.control.Button;
+import org.dyn4j.geometry.Geometry;
+import org.dyn4j.geometry.Mass;
+import org.dyn4j.geometry.MassType;
+import org.dyn4j.geometry.Vector2;
+
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-public class SpaceShip
+public class SpaceShip extends _GameObject
 {
-    private Point2D position;
-    private BufferedImage image;
+    private final int SHOOT_TIMEOUT = 50; // ms
+    private int lives;
 
-    public SpaceShip(String imageResource, Point2D position)
+    public SpaceShip(BufferedImage image, double scale, Vector2 position, int lives)
     {
-        this.position = position;
-
-        try
-        {
-            image = ImageIO.read(getClass().getResource(imageResource));
-        }
-        catch (IOException ex)
-        {
-            ex.printStackTrace();
-        }
+        super(image, scale);
+        this.lives = lives;
+        addFixture(Geometry.createRectangle(image.getWidth()-45, image.getHeight()-45));
+        getTransform().setTranslation(new Vector2(position));
+        setMass(MassType.NORMAL);
+        getFixture(0).setRestitution(0.5);
     }
 
     public void update()
     {
 
     }
-    public void draw(Graphics2D g2d)
+
+    public void shoot()
     {
 
     }
-    public void setPosition(Point2D position)
+
+    public int getLives()
     {
-        this.position = position;
+        return lives;
     }
-    public Point2D getPosition()
+
+    public void setLives(int lives)
     {
-        return position;
+        this.lives = lives;
     }
 }
