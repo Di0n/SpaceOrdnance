@@ -26,7 +26,6 @@ public class SpaceShip extends _GameObject
         addFixture(Geometry.createRectangle(image.getWidth()*scale, image.getHeight()*scale));
         getTransform().setTranslation(new Vector2(position));
         setMass(MassType.NORMAL);
-        getFixture(0).setRestitution(0.5);
     }
 
 

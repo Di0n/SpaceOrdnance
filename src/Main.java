@@ -3,12 +3,14 @@ import org.dyn4j.Listener;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.Force;
 import org.dyn4j.dynamics.World;
+import org.dyn4j.geometry.Mass;
 import org.dyn4j.geometry.Vector2;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -127,6 +129,7 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
     {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D)g;
+        AffineTransform ot = g2d.getTransform();
 
         if (ANTI_ALIASING)
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -147,25 +150,36 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
         {
             DebugDraw.draw(g2d,world, WORLD_SCALE);
         }
+
+        g2d.setTransform(ot);
     }
 
     @Override
     public void keyPressed(KeyEvent e)
     {
-        //System.out.println(Math.toDegrees(ship.getTransform().getRotation()));
+        //System.out.println();
+        double rotation = Math.toDegrees(ship.getTransform().getRotation());
         if (e.getKeyCode() == KeyEvent.VK_UP)
         {
+
             Vector2 velocity = ship.getLinearVelocity();
-            double rotation = ship.getTransform().getRotation();
-            
+
+
+            Vector2 test = new Vector2(rotation);
+            test.multiply(300);
+            //ship.getTransform().transformR(test);
+           ship.applyForce(test);
+
         }
         if (e.getKeyCode() == KeyEvent.VK_LEFT)
         {
 
+            ship.applyImpulse(-9);
         }
         if (e.getKeyCode() == KeyEvent.VK_RIGHT)
         {
-
+            double r = ship.getTransform().getRotation();
+            ship.applyImpulse(9);
         }
         if (e.getKeyCode() == KeyEvent.VK_DOWN)
         {
@@ -177,8 +191,10 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
     @Override
     public void mouseClicked(MouseEvent e)
     {
-        System.out.println("force");
-        ship.applyForce(new Vector2(-50000000, 0));
+        System.out.println(ship.getMass().getMass());
+
+        ship.setMass(new Mass(new Vector2(0, 0), 2000, 20));
+        //ship.applyForce(new Vector2(-50000000, 0));
 
         //ship.getTransform().setRotation(Math.toRadians(-20));
     }

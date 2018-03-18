@@ -30,13 +30,13 @@ public class Asteroid extends _GameObject
         switch (size)
         {
             case SMALL:
-                setMass(new Mass(new Vector2(position), 10, 25));
+                setMass(new Mass(new Vector2(position), 150, 25));
                 break;
             case MEDIUM:
-                setMass(new Mass(new Vector2(position), 30, 15));
+                setMass(new Mass(new Vector2(position), 300, 15));
                 break;
             case LARGE:
-                setMass(new Mass(new Vector2(position), 50, 5));
+                setMass(new Mass(new Vector2(position), 600, 5));
                 break;
         }
     }
