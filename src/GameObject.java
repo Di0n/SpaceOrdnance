@@ -37,19 +37,12 @@ public class GameObject
 			return;
 
 		AffineTransform tx = new AffineTransform();
-		tx.translate(body.getTransform().getTranslationX() * Main.SCALE, body.getTransform().getTranslationY() * Main.SCALE);
+		tx.translate(body.getTransform().getTranslationX() * 1, body.getTransform().getTranslationY() * 1);
 		tx.rotate(body.getTransform().getRotation());
 		tx.scale(scale, -scale);
 		tx.translate(offset.x, offset.y);
 
 		tx.translate(-image.getWidth()/2, -image.getHeight()/2);
 		g2d.drawImage(image, tx, null);
-
 	}
-
-
-
-
-
-
 }

@@ -11,20 +11,41 @@ public abstract class _GameObject extends Body
 {
     protected BufferedImage image;
     protected double scale;
+    protected boolean visible;
 
     public _GameObject(BufferedImage image, double scale)
     {
         this.image = image;
         this.scale = scale;
+        this.visible = true;
     }
 
-    public void draw(Graphics2D g2d)
+    public void setScale(double scale)
     {
-        if(image == null)
+        this.scale = scale;
+    }
+    public double getScale()
+    {
+        return scale;
+    }
+
+    public void setVisible(boolean visible)
+    {
+        this.visible = visible;
+    }
+
+    public boolean isVisible()
+    {
+        return visible;
+    }
+
+    public void draw(Graphics2D g2d, double worldScale)
+    {
+        if(image == null || !visible)
             return;
 
         AffineTransform tx = new AffineTransform();
-        tx.translate(this.getTransform().getTranslationX() * Main.SCALE, this.getTransform().getTranslationY() * Main.SCALE);
+        tx.translate(this.getTransform().getTranslationX() * worldScale, this.getTransform().getTranslationY() * worldScale);
         tx.rotate(this.getTransform().getRotation());
         tx.scale(scale, -scale);
         tx.translate(0, 0);

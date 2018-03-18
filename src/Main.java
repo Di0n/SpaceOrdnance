@@ -1,3 +1,5 @@
+import javafx.scene.control.Button;
+import org.dyn4j.Listener;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.Force;
 import org.dyn4j.dynamics.World;
@@ -7,6 +9,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,12 +22,14 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setContentPane(new Main());
+        frame.pack();
         frame.setVisible(true);
     }
 
-    public static final double SCALE = 1;
-    public static final int FPS = 60;
-    public static final boolean ANTI_ALIASING = true;
+
+    private static final int FPS = 60;
+    private static final double WORLD_SCALE = 1;
+    private static final boolean ANTI_ALIASING = true;
 
     private JCheckBox showDebug;
 
@@ -34,10 +39,15 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
 
     private SpaceShip ship;
 
+    private ArrayList<Asteroid> asteroids = new ArrayList<>();
+    private ArrayList<ExplosionAnimation> explosions = new ArrayList<>();
+    BufferedImage[] explosionImages;
+
 
     public Main()
     {
         add(showDebug = new JCheckBox("Debug"));
+        setFocusable(true);
 
         world = new World();
         world.setGravity(new Vector2(0, 0));
@@ -45,20 +55,29 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
         //double aspectRatio = background.getWidth() / (double)background.getHeight();
 
         BufferedImage shipImage = null;
+        explosionImages = new BufferedImage[64];
         try
         {
             asteroidImage = ImageIO.read(getClass().getResource("/images/Asteroids/large-asteroids/Asteroid-A-09-000.png"));
             background = ImageIO.read(getClass().getResource("/images/Backgrounds/bg1.jpg"));
             shipImage = ImageIO.read(getClass().getResource("/images/Ships/pack/1.png"));
+
+            BufferedImage shipExplosionImages = ImageIO.read(getClass().getResource("/images/FX/explosions/explosion_4.png"));
+            for (int i = 0; i < 64; i++)
+            {
+                explosionImages[i] = shipExplosionImages.getSubimage(512 * (i%8), 512 * (i/8), 512, 512);
+            }
         }
         catch (IOException ex) { ex.printStackTrace(); }
 
-
         Asteroid ast = new Asteroid(asteroidImage, 1, new Vector2(800, 1440/2), Asteroid.Size.LARGE);
         world.addBody(ast);
-        ship = new SpaceShip(shipImage, 0.7, new Vector2(2560/2, 1440/2), 3);
-        world.addBody(ship);
+        asteroids.add(ast);
 
+        ship = new SpaceShip(shipImage, 0.7, new Vector2(2560/2, 1440/2), 3);
+        ship.getTransform().setRotation(Math.toRadians(90));
+
+        world.addBody(ship);
         addKeyListener(this);
         addMouseListener(this);
         lastTime = System.nanoTime();
@@ -79,6 +98,27 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
         lastTime = time;
 
         world.update(deltaTime);
+        ship.update();
+        for (ExplosionAnimation explosion : explosions)
+        {
+            explosion.update();
+        }
+        for (Asteroid asteroid : asteroids)
+        {
+            if (ship.isInContact(asteroid))
+            {
+                ExplosionAnimation ea = new ExplosionAnimation(explosionImages, new Point2D.Double(ship.getTransform().getTranslationX(),
+                        ship.getTransform().getTranslationY()), ship.getScale());
+                ea.start();
+                explosions.add(ea);
+
+                ship.setVisible(false);
+                ship.setLinearVelocity(0, 0);
+                ship.getTransform().setTranslation(getWidth()/2, getHeight()/2); // Zet het ruimteschip weer in het midden
+                ship.setLives(ship.getLives()-1);
+                System.out.printf("collision ship lives: "+ship.getLives());
+            }
+        }
 
         repaint();
     }
@@ -93,33 +133,44 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
 
         g2d.drawImage(background, 0, 0, getWidth(), getHeight(), null);
 
-        for (Body b : world.getBodies())
+        for (Asteroid asteroid : asteroids)
         {
-            _GameObject gameObject = (_GameObject)b;
-            gameObject.draw(g2d);
+            asteroid.draw(g2d, WORLD_SCALE);
         }
+        ship.draw(g2d, WORLD_SCALE);
 
+        for (ExplosionAnimation explosion : explosions)
+        {
+            explosion.draw(g2d, WORLD_SCALE);
+        }
         if (showDebug.isSelected())
         {
-            DebugDraw.draw(g2d,world, 1);
+            DebugDraw.draw(g2d,world, WORLD_SCALE);
         }
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e)
-    {
-
     }
 
     @Override
     public void keyPressed(KeyEvent e)
     {
+        //System.out.println(Math.toDegrees(ship.getTransform().getRotation()));
+        if (e.getKeyCode() == KeyEvent.VK_UP)
+        {
+            Vector2 velocity = ship.getLinearVelocity();
+            double rotation = ship.getTransform().getRotation();
+            
+        }
+        if (e.getKeyCode() == KeyEvent.VK_LEFT)
+        {
 
-    }
+        }
+        if (e.getKeyCode() == KeyEvent.VK_RIGHT)
+        {
 
-    @Override
-    public void keyReleased(KeyEvent e)
-    {
+        }
+        if (e.getKeyCode() == KeyEvent.VK_DOWN)
+        {
+
+        }
 
     }
 
@@ -128,6 +179,8 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
     {
         System.out.println("force");
         ship.applyForce(new Vector2(-50000000, 0));
+
+        //ship.getTransform().setRotation(Math.toRadians(-20));
     }
 
     @Override
@@ -150,6 +203,18 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
 
     @Override
     public void mouseExited(MouseEvent e)
+    {
+
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e)
+    {
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e)
     {
 
     }
