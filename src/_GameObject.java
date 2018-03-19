@@ -45,7 +45,7 @@ public abstract class _GameObject extends Body
             return;
 
         AffineTransform tx = new AffineTransform();
-        tx.translate(this.getTransform().getTranslationX() * 1, this.getTransform().getTranslationY() * 1);
+        tx.translate(this.getTransform().getTranslationX() * worldScale, this.getTransform().getTranslationY() * worldScale);
         tx.rotate(this.getTransform().getRotation());
         tx.scale(scale, -scale);
         tx.translate(0, 0);

@@ -1,3 +1,4 @@
+import framework.GameKeyListener;
 import javafx.scene.control.Button;
 import org.dyn4j.Listener;
 import org.dyn4j.dynamics.Body;
@@ -16,7 +17,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class Main extends JPanel implements ActionListener, KeyListener, MouseListener
+public class Main extends JPanel implements ActionListener, MouseListener
 {
     public static void main(String[] args)
     {
@@ -30,10 +31,11 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
 
 
     private static final int FPS = 60;
-    private static final double WORLD_SCALE = 1;
+    private static final double WORLD_SCALE = 1; //50
     private static final boolean ANTI_ALIASING = true;
 
     private JCheckBox showDebug;
+    private GameKeyListener keyListener;
 
     private BufferedImage background;
     private BufferedImage asteroidImage;
@@ -77,10 +79,9 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
         asteroids.add(ast);
 
         ship = new SpaceShip(shipImage, 0.7, new Vector2(2560/2, 1440/2), 3);
-        ship.getTransform().setRotation(Math.toRadians(90));
-
+        //ship.getTransform().setRotation(Math.toRadians(90));
         world.addBody(ship);
-        addKeyListener(this);
+        addKeyListener(keyListener = new GameKeyListener());
         addMouseListener(this);
         lastTime = System.nanoTime();
         new Timer(1000/60, this).start();
@@ -105,6 +106,9 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
         {
             explosion.update();
         }
+
+
+
         for (Asteroid asteroid : asteroids)
         {
             if (ship.isInContact(asteroid))
@@ -122,6 +126,43 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
             }
         }
 
+        if (!keyListener.getPressedKeys().isEmpty())
+        {
+            final double force = 900000000 * deltaTime;
+            final Vector2 shipRotation = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5);
+
+            if (keyListener.getPressedKeys().contains(KeyEvent.VK_UP))
+            {
+                Vector2 productForce = shipRotation.product(force);
+                //Vector2 p = ship.getWorldCenter().sum(shipRotation.product(-0.9));
+
+                ship.applyForce(productForce);
+            }
+            if (keyListener.getPressedKeys().contains(KeyEvent.VK_DOWN))
+            {
+                Vector2 f = shipRotation.product(-force);
+
+                ship.applyForce(f);
+            }
+            if (keyListener.getPressedKeys().contains(KeyEvent.VK_RIGHT))
+            {
+                Vector2 f1 = shipRotation.product(force ).left();
+                Vector2 f2 = shipRotation.product(force ).right();
+
+                ship.applyForce(f1);
+                //ship.applyImpulse(f1);
+                //ship.getTransform().transformR(f1);
+            }
+
+            if (keyListener.getPressedKeys().contains(KeyEvent.VK_LEFT))
+            {
+                Vector2 f1 = shipRotation.product(force).right();
+                Vector2 f2 = shipRotation.product(force).left();
+
+                ship.applyForce(f1);
+                ship.applyForce(f2);
+            }
+        }
         repaint();
     }
 
@@ -154,6 +195,7 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
         g2d.setTransform(ot);
     }
 
+    /*
     @Override
     public void keyPressed(KeyEvent e)
     {
@@ -186,7 +228,7 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
 
         }
 
-    }
+    }*/
 
     @Override
     public void mouseClicked(MouseEvent e)
@@ -223,15 +265,5 @@ public class Main extends JPanel implements ActionListener, KeyListener, MouseLi
 
     }
 
-    @Override
-    public void keyTyped(KeyEvent e)
-    {
 
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e)
-    {
-
-    }
 }
