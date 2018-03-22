@@ -24,13 +24,14 @@ public class SpaceShip extends _GameObject
         this.lives = lives;
 
         addFixture(Geometry.createRectangle(image.getWidth()*scale, image.getHeight()*scale));
-        getTransform().setTranslation(new Vector2(position));
+        getTransform().setTranslation(new Vector2(position.x * scale, position.y*scale));
         setMass(MassType.NORMAL);
-        setMass(new Mass(new Vector2(position), 20, 10));
+        //setMass(new Mass(new Vector2(0,0), 20, 10));
+        setAngularDamping(5);
     }
 
 
-    public void update()
+    public void update(double deltaTime)
     {
 
     }

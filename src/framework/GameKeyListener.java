@@ -24,4 +24,9 @@ public class GameKeyListener extends KeyAdapter
     {
         return pressedKeys;
     }
+
+    public void update()
+    {
+
+    }
 }

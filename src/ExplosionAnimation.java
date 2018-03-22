@@ -14,7 +14,7 @@ public class ExplosionAnimation
     public ExplosionAnimation(BufferedImage[] explosionImages, Point2D explosionLocation, double scale)
     {
         this.explosionImages = explosionImages;
-        this.explosionLocation = explosionLocation;
+        this.explosionLocation = new Point2D.Double(explosionLocation.getX() * scale, explosionLocation.getY() * scale);
         this.scale = scale;
         this.explode = false;
     }
@@ -38,9 +38,10 @@ public class ExplosionAnimation
 
         AffineTransform tx = new AffineTransform();
 
-        tx.translate(explosionLocation.getX() * worldScale - explosion.getWidth()*scale / 2, explosionLocation.getY() * worldScale - explosion.getHeight()*scale / 2);
+        tx.translate(explosionLocation.getX() * worldScale / 2 - explosion.getWidth() * scale / 2, explosionLocation.getY() * worldScale / 2 - explosion.getHeight() * scale / 2);
+        //tx.translate(explosionLocation.getX() * worldScale - explosion.getWidth()*scale / 2, explosionLocation.getY() * worldScale - explosion.getHeight()*scale / 2);
         //tx.rotate(Math.toRadians(getTransform().getRotation()));
-        tx.scale(scale,scale);
+        tx.scale(scale * worldScale,scale * worldScale);
 
         g2d.drawImage(explosion, tx, null);
     }

@@ -16,6 +16,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class Main extends JPanel implements ActionListener, MouseListener
 {
@@ -31,7 +32,7 @@ public class Main extends JPanel implements ActionListener, MouseListener
 
 
     private static final int FPS = 60;
-    private static final double WORLD_SCALE = 1; //50
+    private static final double WORLD_SCALE = 100; //50
     private static final boolean ANTI_ALIASING = true;
 
     private JCheckBox showDebug;
@@ -74,11 +75,11 @@ public class Main extends JPanel implements ActionListener, MouseListener
         }
         catch (IOException ex) { ex.printStackTrace(); }
 
-        Asteroid ast = new Asteroid(asteroidImage, 1, new Vector2(400, 1080/2), Asteroid.Size.LARGE);
+        Asteroid ast = new Asteroid(asteroidImage, 0.01, new Vector2(400, 1080/2), Asteroid.Size.LARGE);
         world.addBody(ast);
         asteroids.add(ast);
 
-        ship = new SpaceShip(shipImage, 0.7, new Vector2(1920/2, 1080/2), 3);
+        ship = new SpaceShip(shipImage, 0.007, new Vector2(1920/2, 1080/2), 3);
         ship.getTransform().setRotation(Math.toRadians(90));
         world.addBody(ship);
         addKeyListener(keyListener = new GameKeyListener());
@@ -97,17 +98,21 @@ public class Main extends JPanel implements ActionListener, MouseListener
     public void actionPerformed(ActionEvent e)
     {
         long time = System.nanoTime();
-        double deltaTime = ( time - lastTime ) / 1000000000.0;
+        double deltaTime = (time - lastTime) / 1e9; //1000000000.0;
         lastTime = time;
 
         world.update(deltaTime);
-        ship.update();
-        for (ExplosionAnimation explosion : explosions)
+
+        for (Iterator<ExplosionAnimation> iterator = explosions.iterator(); iterator.hasNext();)
         {
+            ExplosionAnimation explosion = iterator.next();
+            if (explosion.finished())
+            {
+                iterator.remove();
+                continue;
+            }
             explosion.update();
         }
-
-
 
         for (Asteroid asteroid : asteroids)
         {
@@ -118,9 +123,10 @@ public class Main extends JPanel implements ActionListener, MouseListener
                 ea.start();
                 explosions.add(ea);
 
-                ship.setVisible(false);
+                //ship.setVisible(false);
                 ship.setLinearVelocity(0, 0);
-                ship.getTransform().setTranslation(getWidth()/2, getHeight()/2); // Zet het ruimteschip weer in het midden
+                ship.setAngularVelocity(0);
+                ship.getTransform().setTranslation(200, 200); // Zet het ruimteschip weer in het midden
                 ship.setLives(ship.getLives()-1);
                 System.out.printf("collision ship lives: "+ship.getLives());
             }
@@ -128,7 +134,7 @@ public class Main extends JPanel implements ActionListener, MouseListener
 
         if (!keyListener.getPressedKeys().isEmpty())
         {
-            final double force = 900000000 * deltaTime;
+            final double force = 9;
             final Vector2 shipRotation = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5); // Voorkant schip
 
             if (keyListener.getPressedKeys().contains(KeyEvent.VK_UP))
@@ -149,7 +155,8 @@ public class Main extends JPanel implements ActionListener, MouseListener
                 Vector2 f1 = shipRotation.product(force ).left();
                 Vector2 f2 = shipRotation.product(force ).right();
 
-                ship.applyForce(f1);
+                ship.applyImpulse(0.1);
+                //ship.applyForce(f1);
                 //ship.applyImpulse(f1);
                 //ship.getTransform().transformR(f1);
             }
@@ -159,8 +166,15 @@ public class Main extends JPanel implements ActionListener, MouseListener
                 Vector2 f1 = shipRotation.product(force).right();
                 Vector2 f2 = shipRotation.product(force).left();
 
-                ship.applyForce(f1);
-                ship.applyForce(f2);
+                ship.applyImpulse(-0.1);
+                //ship.applyTorque(-10);
+                //ship.applyImpulse(10/10);
+                //ship.applyForce(f1);
+                //ship.applyForce(f2);
+            }
+            if (keyListener.getPressedKeys().contains(KeyEvent.VK_P))
+            {
+                System.out.println( ship.getTransform().getTranslationX());
             }
         }
         repaint();

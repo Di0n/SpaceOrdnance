@@ -47,10 +47,12 @@ public abstract class _GameObject extends Body
         AffineTransform tx = new AffineTransform();
         tx.translate(this.getTransform().getTranslationX() * worldScale, this.getTransform().getTranslationY() * worldScale);
         tx.rotate(this.getTransform().getRotation());
-        tx.scale(scale, -scale);
+        tx.scale(scale * worldScale, -scale * worldScale);
         tx.translate(0, 0);
 
         tx.translate(-image.getWidth()/2, -image.getHeight()/2);
         g2d.drawImage(image, tx, null);
     }
+
+    public void update() {};
 }
