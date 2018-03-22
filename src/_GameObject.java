@@ -39,6 +39,16 @@ public abstract class _GameObject extends Body
         return visible;
     }
 
+    public void setPosition(Vector2 position)
+    {
+        getTransform().setTranslation(new Vector2(position.x * scale, position.y * scale));
+    }
+
+    public Vector2 getPosition()
+    {
+        return new Vector2(getTransform().getTranslation().x * scale, getTransform().getTranslation().y * scale);
+    }
+
     public void draw(Graphics2D g2d, double worldScale)
     {
         if(image == null || !visible)

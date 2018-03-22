@@ -127,7 +127,8 @@ public class Main extends JPanel implements ActionListener, MouseListener
                 //ship.setVisible(false);
                 ship.setLinearVelocity(0, 0);
                 ship.setAngularVelocity(0);
-                ship.getTransform().setTranslation(200, 200); // Zet het ruimteschip weer in het midden
+                //ship.getTransform().setTranslation(1920/2 * , 1080/2); // Zet het ruimteschip weer in het midden
+                ship.setPosition(new Vector2(getWidth() / 2, getHeight() / 2));
                 ship.setLives(ship.getLives()-1);
                 System.out.printf("collision ship lives: "+ship.getLives());
             }

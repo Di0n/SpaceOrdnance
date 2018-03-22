@@ -30,7 +30,6 @@ public class SpaceShip extends _GameObject
         setAngularDamping(5);
     }
 
-
     public void update(double deltaTime)
     {
 
