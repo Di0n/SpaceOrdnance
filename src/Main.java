@@ -25,13 +25,14 @@ public class Main extends JPanel implements ActionListener, MouseListener
         JFrame frame = new JFrame("Space Ordnance");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setUndecorated(true);
         frame.setContentPane(new Main());
         frame.pack();
         frame.setVisible(true);
     }
 
 
-    private static final int FPS = 60;
+    private static final int FPS = 144;
     private static final double WORLD_SCALE = 100; //50
     private static final boolean ANTI_ALIASING = true;
 
@@ -85,7 +86,7 @@ public class Main extends JPanel implements ActionListener, MouseListener
         addKeyListener(keyListener = new GameKeyListener());
         addMouseListener(this);
         lastTime = System.nanoTime();
-        new Timer(1000/60, this).start();
+        new Timer(1, this).start();
     }
 
     private void reset()
@@ -134,7 +135,7 @@ public class Main extends JPanel implements ActionListener, MouseListener
 
         if (!keyListener.getPressedKeys().isEmpty())
         {
-            final double force = 9;
+            final double force = 500 * deltaTime;
             final Vector2 shipRotation = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5); // Voorkant schip
 
             if (keyListener.getPressedKeys().contains(KeyEvent.VK_UP))
@@ -171,10 +172,6 @@ public class Main extends JPanel implements ActionListener, MouseListener
                 //ship.applyImpulse(10/10);
                 //ship.applyForce(f1);
                 //ship.applyForce(f2);
-            }
-            if (keyListener.getPressedKeys().contains(KeyEvent.VK_P))
-            {
-                System.out.println( ship.getTransform().getTranslationX());
             }
         }
         repaint();
@@ -249,7 +246,6 @@ public class Main extends JPanel implements ActionListener, MouseListener
     {
         System.out.println(ship.getMass().getMass());
 
-        ship.setMass(new Mass(new Vector2(0, 0), 2000, 20));
         //ship.applyForce(new Vector2(-50000000, 0));
 
         //ship.getTransform().setRotation(Math.toRadians(-20));

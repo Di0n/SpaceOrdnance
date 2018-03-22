@@ -14,7 +14,7 @@ public class ExplosionAnimation
     public ExplosionAnimation(BufferedImage[] explosionImages, Point2D explosionLocation, double scale)
     {
         this.explosionImages = explosionImages;
-        this.explosionLocation = new Point2D.Double(explosionLocation.getX() * scale, explosionLocation.getY() * scale);
+        this.explosionLocation = explosionLocation;//new Point2D.Double(explosionLocation.getX() * scale, explosionLocation.getY() * scale);
         this.scale = scale;
         this.explode = false;
     }
