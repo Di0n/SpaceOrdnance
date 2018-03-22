@@ -74,12 +74,12 @@ public class Main extends JPanel implements ActionListener, MouseListener
         }
         catch (IOException ex) { ex.printStackTrace(); }
 
-        Asteroid ast = new Asteroid(asteroidImage, 1, new Vector2(800, 1440/2), Asteroid.Size.LARGE);
+        Asteroid ast = new Asteroid(asteroidImage, 1, new Vector2(400, 1080/2), Asteroid.Size.LARGE);
         world.addBody(ast);
         asteroids.add(ast);
 
-        ship = new SpaceShip(shipImage, 0.7, new Vector2(2560/2, 1440/2), 3);
-        //ship.getTransform().setRotation(Math.toRadians(90));
+        ship = new SpaceShip(shipImage, 0.7, new Vector2(1920/2, 1080/2), 3);
+        ship.getTransform().setRotation(Math.toRadians(90));
         world.addBody(ship);
         addKeyListener(keyListener = new GameKeyListener());
         addMouseListener(this);
@@ -129,7 +129,7 @@ public class Main extends JPanel implements ActionListener, MouseListener
         if (!keyListener.getPressedKeys().isEmpty())
         {
             final double force = 900000000 * deltaTime;
-            final Vector2 shipRotation = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5);
+            final Vector2 shipRotation = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5); // Voorkant schip
 
             if (keyListener.getPressedKeys().contains(KeyEvent.VK_UP))
             {
