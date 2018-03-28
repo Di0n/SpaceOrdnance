@@ -18,13 +18,13 @@ public class SpaceShip extends _GameObject
     private int lives;
 
 
-    public SpaceShip(BufferedImage image, double scale, Vector2 position, int lives)
+    public SpaceShip(BufferedImage image, double scale, int lives)
     {
         super(image, scale);
         this.lives = lives;
 
         addFixture(Geometry.createRectangle(image.getWidth()*scale, image.getHeight()*scale));
-        getTransform().setTranslation(new Vector2(position.x * scale, position.y*scale));
+        //getTransform().setTranslation(new Vector2(0 * scale, 0*scale));
         setMass(MassType.NORMAL);
         //setMass(new Mass(new Vector2(0,0), 20, 10));
         setAngularDamping(5);

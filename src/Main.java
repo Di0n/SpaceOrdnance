@@ -1,3 +1,4 @@
+import framework.Game;
 import framework.GameKeyListener;
 import javafx.scene.control.Button;
 import org.dyn4j.Listener;
@@ -14,59 +15,232 @@ import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Main extends JPanel implements ActionListener, MouseListener
+public class Main extends Game implements ActionListener, MouseListener
 {
     public static void main(String[] args)
     {
+        /*
         JFrame frame = new JFrame("Space Ordnance");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setUndecorated(true);
         frame.setContentPane(new Main());
         frame.pack();
-        frame.setVisible(true);
+        frame.setVisible(true);*/
+        new Main().run();
     }
 
-
+    // INSTELLINGEN
     private static final int FPS = 144;
     private static final double WORLD_SCALE = 100; //50
     private static final boolean ANTI_ALIASING = true;
+    private static final String ASTEROID_IMAGE_RSC_PATH = "/images/Asteroids";
 
-    private JCheckBox showDebug;
+    // DEBUG
+    ///private JCheckBox showDebug;
+
+    // FRAMEWORK
+    ///private World world;
     private GameKeyListener keyListener;
 
-    private BufferedImage background;
-    private BufferedImage asteroidImage;
-    private World world;
-
+    // GAME OBJECTS
     private SpaceShip ship;
-
     private ArrayList<Asteroid> asteroids = new ArrayList<>();
+
+    // GAME STATE
+    private int level;
+    // GRAPHICS
+    private ArrayList<BufferedImage> smallAsteroidImages = new ArrayList<>();
+    private ArrayList<BufferedImage> mediumAsteroidImages = new ArrayList<>();
+    private ArrayList<BufferedImage> largeAsteroidImages = new ArrayList<>();
     private ArrayList<ExplosionAnimation> explosions = new ArrayList<>();
-    BufferedImage[] explosionImages;
 
+    private BufferedImage[] explosionImages;
+    private BufferedImage background;
+    private BufferedImage shipImage;
 
+    // GAME START
     public Main()
     {
+        super("Space Ordnance", 100);
+
+        /*
         add(showDebug = new JCheckBox("Debug"));
         setFocusable(true);
+        loadGraphics();
 
         world = new World();
         world.setGravity(new Vector2(0, 0));
 
         //double aspectRatio = background.getWidth() / (double)background.getHeight();
 
-        BufferedImage shipImage = null;
+
+
+        //Asteroid ast = new Asteroid(asteroidImage, 0.01, new Vector2(400, 1080/2), Asteroid.Size.LARGE);
+        //world.addBody(ast);
+        //asteroids.add(ast);
+
+        ship = new SpaceShip(shipImage, 0.007, 3);
+        world.addBody(ship);
+
+        reset();
+
+        addKeyListener(keyListener = new GameKeyListener());
+        addMouseListener(this);
+
+        lastTime = System.nanoTime();
+        new Timer(5, this).start();*/
+    }
+
+    @Override
+    protected void loadContent()
+    {
+        loadGraphics();
+        world.setGravity(new Vector2(0,0));
+
+        ship = new SpaceShip(shipImage, 0.007, 3);
+        world.addBody(ship);
+
+        canvas.addKeyListener(keyListener = new GameKeyListener());
+
+        reset();
+    }
+
+    @Override
+    protected void update(double deltaTime)
+    {
+        world.update(deltaTime);
+
+        for (Iterator<ExplosionAnimation> iterator = explosions.iterator(); iterator.hasNext();)
+        {
+            ExplosionAnimation explosion = iterator.next();
+            if (explosion.finished())
+            {
+                iterator.remove();
+                continue;
+            }
+            explosion.update();
+        }
+
+        for (Asteroid asteroid : asteroids)
+        {
+            if (ship.isInContact(asteroid))
+            {
+                ExplosionAnimation ea = new ExplosionAnimation(explosionImages, new Point2D.Double(ship.getTransform().getTranslationX(),
+                        ship.getTransform().getTranslationY()), ship.getScale());
+                ea.start();
+                explosions.add(ea);
+
+                //ship.setVisible(false);
+                ship.setLinearVelocity(0, 0);
+                ship.setAngularVelocity(0);
+                //ship.getTransform().setTranslation(1920/2 * , 1080/2); // Zet het ruimteschip weer in het midden
+                ship.setPosition(new Vector2(getWidth() / 2, getHeight() / 2));
+                ship.setLives(ship.getLives()-1);
+                System.out.printf("collision ship lives: "+ship.getLives());
+            }
+        }
+
+        if (!keyListener.getPressedKeys().isEmpty())
+        {
+            final double force = 500 * deltaTime;
+            final Vector2 shipRotation = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5); // Voorkant schip
+
+            if (keyListener.getPressedKeys().contains(KeyEvent.VK_UP))
+            {
+                Vector2 productForce = shipRotation.product(force);
+                //Vector2 p = ship.getWorldCenter().sum(shipRotation.product(-0.9));
+                ship.applyForce(productForce);
+            }
+            if (keyListener.getPressedKeys().contains(KeyEvent.VK_DOWN))
+            {
+                Vector2 f = shipRotation.product(-force);
+                ship.applyForce(f);
+            }
+            if (keyListener.getPressedKeys().contains(KeyEvent.VK_RIGHT))
+            {
+                Vector2 f1 = shipRotation.product(force ).left();
+                Vector2 f2 = shipRotation.product(force ).right();
+
+                ship.applyImpulse(0.1);
+                //ship.applyForce(f1);
+                //ship.applyImpulse(f1);
+                //ship.getTransform().transformR(f1);
+            }
+
+            if (keyListener.getPressedKeys().contains(KeyEvent.VK_LEFT))
+            {
+                Vector2 f1 = shipRotation.product(force).right();
+                Vector2 f2 = shipRotation.product(force).left();
+
+                ship.applyImpulse(-0.1);
+                //ship.applyTorque(-10);
+                //ship.applyImpulse(10/10);
+                //ship.applyForce(f1);
+                //ship.applyForce(f2);
+            }
+        }
+    }
+
+    @Override
+    protected void draw(Graphics2D g2d)
+    {
+        AffineTransform ot = g2d.getTransform();
+
+        if (ANTI_ALIASING)
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g2d.drawImage(background, 0, 0, getWidth(), getHeight(), null);
+
+        for (Asteroid asteroid : asteroids)
+        {
+            asteroid.draw(g2d, WORLD_SCALE);
+        }
+        ship.draw(g2d, WORLD_SCALE);
+
+        for (ExplosionAnimation explosion : explosions)
+        {
+            explosion.draw(g2d, WORLD_SCALE);
+        }
+        //if (debugCheckBox.isSelected())
+       // {
+       //     DebugDraw.draw(g2d,world, WORLD_SCALE);
+       // }
+
+        g2d.setTransform(ot);
+    }
+
+    // GRAFISCHE OBJECTEN INLADEN
+    private void loadGraphics()
+    {
         explosionImages = new BufferedImage[64];
         try
         {
-            asteroidImage = ImageIO.read(getClass().getResource("/images/Asteroids/large-asteroids/Asteroid-A-09-000.png"));
-            background = ImageIO.read(getClass().getResource("/images/Backgrounds/bg1.jpg"));
+            background = ImageIO.read(getClass().getResource("/images/Backgrounds/bg5.jpg"));
             shipImage = ImageIO.read(getClass().getResource("/images/Ships/pack/1.png"));
+
+            //File asteroidDir = new File(String.valueOf(getClass().getResource("/images/Asteroids")));
+            File asteroidDir = new File("D:\\Libraries\\Documents\\GitHub\\SpaceOrdnance\\resources\\images\\Asteroids");
+            File[] dirListing = asteroidDir.listFiles();
+            for (File dir : dirListing)
+            {
+                File[] categoryDir = dir.listFiles();
+                for (File file : categoryDir)
+                {
+                    if (dir.getName().equals("small-asteroids"))
+                        smallAsteroidImages.add(ImageIO.read(getClass().getResource(String.format("%s/small-asteroids/%s", ASTEROID_IMAGE_RSC_PATH, file.getName()))));
+                    else if (dir.getName().equals("medium-asteroids"))
+                        mediumAsteroidImages.add(ImageIO.read(getClass().getResource(String.format("%s/medium-asteroids/%s", ASTEROID_IMAGE_RSC_PATH, file.getName()))));
+                    else if (dir.getName().equals("large-asteroids"))
+                        largeAsteroidImages.add(ImageIO.read(getClass().getResource(String.format("%s/large-asteroids/%s", ASTEROID_IMAGE_RSC_PATH, file.getName()))));
+                    break;
+                }
+            }
 
             BufferedImage shipExplosionImages = ImageIO.read(getClass().getResource("/images/FX/explosions/explosion_4.png"));
             for (int i = 0; i < 64; i++)
@@ -75,25 +249,10 @@ public class Main extends JPanel implements ActionListener, MouseListener
             }
         }
         catch (IOException ex) { ex.printStackTrace(); }
-
-        Asteroid ast = new Asteroid(asteroidImage, 0.01, new Vector2(400, 1080/2), Asteroid.Size.LARGE);
-        world.addBody(ast);
-        asteroids.add(ast);
-
-        ship = new SpaceShip(shipImage, 0.007, new Vector2(1920/2, 1080/2), 3);
-        ship.getTransform().setRotation(Math.toRadians(90));
-        world.addBody(ship);
-        addKeyListener(keyListener = new GameKeyListener());
-        addMouseListener(this);
-        lastTime = System.nanoTime();
-        new Timer(1, this).start();
     }
 
-    private void reset()
-    {
 
-    }
-
+    // GAME UPDATE
     private long lastTime;
     @Override
     public void actionPerformed(ActionEvent e)
@@ -148,9 +307,10 @@ public class Main extends JPanel implements ActionListener, MouseListener
             }
             if (keyListener.getPressedKeys().contains(KeyEvent.VK_DOWN))
             {
-                Vector2 f = shipRotation.product(-force);
+                //Vector2 f = shipRotation.product(-force);
 
-                ship.applyForce(f);
+                //ship.applyForce(f);
+                respawn();
             }
             if (keyListener.getPressedKeys().contains(KeyEvent.VK_RIGHT))
             {
@@ -178,9 +338,10 @@ public class Main extends JPanel implements ActionListener, MouseListener
         repaint();
     }
 
+    // GAME DRAW
     public void paintComponent(Graphics g)
     {
-        super.paintComponent(g);
+        ///super.paintComponent(g);
         Graphics2D g2d = (Graphics2D)g;
         AffineTransform ot = g2d.getTransform();
 
@@ -199,48 +360,28 @@ public class Main extends JPanel implements ActionListener, MouseListener
         {
             explosion.draw(g2d, WORLD_SCALE);
         }
-        if (showDebug.isSelected())
-        {
-            DebugDraw.draw(g2d,world, WORLD_SCALE);
-        }
+        ///if (showDebug.isSelected())
+        ///{
+           /// DebugDraw.draw(g2d,world, WORLD_SCALE);
+        ///}
 
         g2d.setTransform(ot);
     }
 
-    /*
-    @Override
-    public void keyPressed(KeyEvent e)
+    private void respawn()
     {
-        //System.out.println();
-        double rotation = Math.toDegrees(ship.getTransform().getRotation());
-        if (e.getKeyCode() == KeyEvent.VK_UP)
-        {
+        //ship.setPosition(new Vector2(getWidth()/2, getHeight()/2));
+        ship.getTransform().setTranslation(new Vector2((getWidth()/2)/worldScale, (getHeight()/2)/worldScale));
+        ship.getTransform().setRotation(Math.toRadians(180));
+    }
+    private void reset()
+    {
+        world.removeAllBodiesAndJoints();
+        respawn();
+        world.addBody(ship);
 
-            Vector2 velocity = ship.getLinearVelocity();
+    }
 
-
-            Vector2 test = new Vector2(rotation);
-            test.multiply(300);
-            //ship.getTransform().transformR(test);
-           ship.applyForce(test);
-
-        }
-        if (e.getKeyCode() == KeyEvent.VK_LEFT)
-        {
-
-            ship.applyImpulse(-9);
-        }
-        if (e.getKeyCode() == KeyEvent.VK_RIGHT)
-        {
-            double r = ship.getTransform().getRotation();
-            ship.applyImpulse(9);
-        }
-        if (e.getKeyCode() == KeyEvent.VK_DOWN)
-        {
-
-        }
-
-    }*/
 
     @Override
     public void mouseClicked(MouseEvent e)
