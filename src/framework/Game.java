@@ -4,8 +4,11 @@ import org.dyn4j.dynamics.World;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.MouseAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferStrategy;
 
 public abstract class Game extends JFrame
@@ -20,6 +23,8 @@ public abstract class Game extends JFrame
     protected final Canvas canvas;
 
     protected final JCheckBox debugCheckBox;
+
+    protected boolean antiAliasing;
 
 
     public Game(String name, double worldScale)
@@ -57,8 +62,6 @@ public abstract class Game extends JFrame
         setResizable(false);
 
         pack();
-
-
     }
 
     public void run()
@@ -95,20 +98,41 @@ public abstract class Game extends JFrame
         lastTime = time;
 
         update(deltaTime);
+
         Graphics2D g2d = (Graphics2D)canvas.getBufferStrategy().getDrawGraphics();
+
+        if (antiAliasing)
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        AffineTransform ot = g2d.getTransform();
         draw(g2d);
+
+        g2d.setTransform(ot);
         g2d.dispose();
 
         BufferStrategy strategy = canvas.getBufferStrategy();
         if (!strategy.contentsLost()) {
             strategy.show();
         }
+
+        Toolkit.getDefaultToolkit().sync();
     }
 
+    /**
+     * Game loop voor game logica
+     * @param deltaTime
+     */
     protected abstract void update(double deltaTime);
 
+    /**
+     * Game loop voor grafische handelingen
+     * @param g2d
+     */
     protected abstract void draw(Graphics2D g2d);
 
+    /**
+     * Laad hier de benodigde game assets
+     */
     protected abstract void loadContent();
 
     public synchronized void stop()
@@ -116,8 +140,22 @@ public abstract class Game extends JFrame
         closing = true;
     }
 
-    public boolean isClosing()
+    /**
+     * Geeft aan of de game wordt gevraagd om te stoppen
+     * @return
+     */
+    public final boolean isClosing()
     {
         return closing;
+    }
+
+    public void addKeyboardListener(KeyAdapter keyAdapter)
+    {
+        this.canvas.addKeyListener(keyAdapter);
+    }
+
+    public void addMouseListener(MouseAdapter mouseAdapter)
+    {
+        this.canvas.addMouseListener(mouseAdapter);
     }
 }

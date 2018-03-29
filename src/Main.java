@@ -68,7 +68,9 @@ public class Main extends Game implements ActionListener, MouseListener
     public Main()
     {
         super("Space Ordnance", 100);
-
+        super.antiAliasing = true;
+        super.addKeyboardListener(keyListener = new GameKeyListener());
+        world.setGravity(new Vector2(0,0));
         /*
         add(showDebug = new JCheckBox("Debug"));
         setFocusable(true);
@@ -101,13 +103,8 @@ public class Main extends Game implements ActionListener, MouseListener
     protected void loadContent()
     {
         loadGraphics();
-        world.setGravity(new Vector2(0,0));
 
         ship = new SpaceShip(shipImage, 0.007, 3);
-        world.addBody(ship);
-
-        canvas.addKeyListener(keyListener = new GameKeyListener());
-
         reset();
     }
 
@@ -148,26 +145,29 @@ public class Main extends Game implements ActionListener, MouseListener
 
         if (!keyListener.getPressedKeys().isEmpty())
         {
-            final double force = 500 * deltaTime;
+
             final Vector2 shipRotation = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5); // Voorkant schip
 
             if (keyListener.getPressedKeys().contains(KeyEvent.VK_UP))
             {
+                final double force = 300 * deltaTime;
                 Vector2 productForce = shipRotation.product(force);
                 //Vector2 p = ship.getWorldCenter().sum(shipRotation.product(-0.9));
                 ship.applyForce(productForce);
             }
             if (keyListener.getPressedKeys().contains(KeyEvent.VK_DOWN))
             {
+                final double force = 300 * deltaTime;
                 Vector2 f = shipRotation.product(-force);
                 ship.applyForce(f);
             }
             if (keyListener.getPressedKeys().contains(KeyEvent.VK_RIGHT))
             {
+                final double force = 50 * deltaTime;
                 Vector2 f1 = shipRotation.product(force ).left();
                 Vector2 f2 = shipRotation.product(force ).right();
 
-                ship.applyImpulse(0.1);
+                ship.applyImpulse(10 * deltaTime);
                 //ship.applyForce(f1);
                 //ship.applyImpulse(f1);
                 //ship.getTransform().transformR(f1);
@@ -175,10 +175,11 @@ public class Main extends Game implements ActionListener, MouseListener
 
             if (keyListener.getPressedKeys().contains(KeyEvent.VK_LEFT))
             {
+                final double force = 10 * deltaTime;
                 Vector2 f1 = shipRotation.product(force).right();
                 Vector2 f2 = shipRotation.product(force).left();
 
-                ship.applyImpulse(-0.1);
+                ship.applyImpulse(-10 * deltaTime);
                 //ship.applyTorque(-10);
                 //ship.applyImpulse(10/10);
                 //ship.applyForce(f1);
@@ -190,30 +191,37 @@ public class Main extends Game implements ActionListener, MouseListener
     @Override
     protected void draw(Graphics2D g2d)
     {
-        AffineTransform ot = g2d.getTransform();
-
-        if (ANTI_ALIASING)
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
         g2d.drawImage(background, 0, 0, getWidth(), getHeight(), null);
 
         for (Asteroid asteroid : asteroids)
         {
-            asteroid.draw(g2d, WORLD_SCALE);
+            asteroid.draw(g2d, worldScale);
         }
-        ship.draw(g2d, WORLD_SCALE);
+        ship.draw(g2d, worldScale);
 
         for (ExplosionAnimation explosion : explosions)
         {
-            explosion.draw(g2d, WORLD_SCALE);
+            explosion.draw(g2d, worldScale);
         }
         //if (debugCheckBox.isSelected())
        // {
        //     DebugDraw.draw(g2d,world, WORLD_SCALE);
        // }
-
-        g2d.setTransform(ot);
     }
+
+    private void respawn()
+    {
+        //ship.setPosition(new Vector2(getWidth()/2, getHeight()/2));
+        ship.getTransform().setTranslation(new Vector2((getWidth()/2)/worldScale, (getHeight()/2)/worldScale));
+        ship.getTransform().setRotation(Math.toRadians(180));
+    }
+    private void reset()
+    {
+        world.removeAllBodiesAndJoints();
+        respawn();
+        world.addBody(ship);
+    }
+
 
     // GRAFISCHE OBJECTEN INLADEN
     private void loadGraphics()
@@ -368,19 +376,7 @@ public class Main extends Game implements ActionListener, MouseListener
         g2d.setTransform(ot);
     }
 
-    private void respawn()
-    {
-        //ship.setPosition(new Vector2(getWidth()/2, getHeight()/2));
-        ship.getTransform().setTranslation(new Vector2((getWidth()/2)/worldScale, (getHeight()/2)/worldScale));
-        ship.getTransform().setRotation(Math.toRadians(180));
-    }
-    private void reset()
-    {
-        world.removeAllBodiesAndJoints();
-        respawn();
-        world.addBody(ship);
 
-    }
 
 
     @Override
