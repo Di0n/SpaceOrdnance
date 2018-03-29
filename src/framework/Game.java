@@ -22,8 +22,6 @@ public abstract class Game extends JFrame
 
     protected final Canvas canvas;
 
-    protected final JCheckBox debugCheckBox;
-
     protected boolean antiAliasing;
 
 
@@ -35,7 +33,6 @@ public abstract class Game extends JFrame
         world = new World();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        debugCheckBox = null;
 
         addWindowListener(new WindowAdapter()
         {
