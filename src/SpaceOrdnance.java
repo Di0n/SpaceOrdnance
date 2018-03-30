@@ -247,7 +247,7 @@ public class SpaceOrdnance extends Game
     @Override
     protected void loadContent()
     {
-        explosionImages = new BufferedImage[4][64];
+        explosionImages = new BufferedImage[4][];
         BufferedImage laserImage = null;
 
         try
@@ -281,6 +281,7 @@ public class SpaceOrdnance extends Game
             {
                 BufferedImage shipExplosionImages = ImageIO.read(getClass().getResource(String.format("/images/FX/explosions/explosion_%s.png", i+1)));
                 //BufferedImage shipExplosionImages = ImageIO.read(getClass().getResource("/images/FX/explosions/explosion_4.png"));
+                explosionImages[i] = new BufferedImage[64];
                 for (int j = 0; j < 64; j++)
                 {
                     explosionImages[i][j] = shipExplosionImages.getSubimage(512 * (i % 8), 512 * (i / 8), 512, 512);
