@@ -11,7 +11,7 @@ public class Laser extends _GameObject
     public Laser(BufferedImage image, double scale, Vector2 position)
     {
         super(image, scale);
-        addFixture(Geometry.createRectangle(image.getWidth(), image.getHeight()));
+        addFixture(Geometry.createRectangle(image.getWidth() * scale, image.getHeight() * scale));
         getTransform().setTranslation(new Vector2(position));
         setMass(MassType.INFINITE);
         setBullet(true);

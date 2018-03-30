@@ -78,6 +78,10 @@ public class SpaceOrdnance extends Game
     {
         loadGraphics();
 
+        try
+        {
+            ImageIO.read(getClass().getResource("/images/FX/projectiles/yellow-laser.png"));
+        }
         ship = new SpaceShip(shipImage, 0.007, 3);
         reset();
     }
@@ -117,24 +121,23 @@ public class SpaceOrdnance extends Game
             }
         }
 
-        if (keyListener.getPressedKeys().isEmpty()) return;
 
         final Vector2 shipRotation = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5); // Voorkant schip
 
-        if (keyListener.getPressedKeys().contains(KeyEvent.VK_UP))
+        if (keyListener.isKeyDown(KeyEvent.VK_UP))
         {
             final double force = 300 * deltaTime;
             Vector2 productForce = shipRotation.product(force);
             //Vector2 p = ship.getWorldCenter().sum(shipRotation.product(-0.9));
             ship.applyForce(productForce);
         }
-        if (keyListener.getPressedKeys().contains(KeyEvent.VK_DOWN))
+        if (keyListener.isKeyDown(KeyEvent.VK_DOWN))
         {
             final double force = 300 * deltaTime;
             Vector2 f = shipRotation.product(-force);
             ship.applyForce(f);
         }
-        if (keyListener.getPressedKeys().contains(KeyEvent.VK_RIGHT))
+        if (keyListener.isKeyDown(KeyEvent.VK_RIGHT))
         {
             final double force = 10 * deltaTime;
             Vector2 f1 = shipRotation.product(force ).left();
@@ -143,7 +146,7 @@ public class SpaceOrdnance extends Game
             ship.applyImpulse(force);
         }
 
-        if (keyListener.getPressedKeys().contains(KeyEvent.VK_LEFT))
+        if (keyListener.isKeyDown(KeyEvent.VK_LEFT))
         {
             final double force = -10 * deltaTime;
             Vector2 f1 = shipRotation.product(force).right();
@@ -152,10 +155,12 @@ public class SpaceOrdnance extends Game
             ship.applyImpulse(force);
         }
 
-        if (keyListener.getPressedKeys().contains(KeyEvent.VK_P))
+        if (keyListener.isKeyPressed(KeyEvent.VK_P))
         {
-            debug = true;
+            debug = !debug;
         }
+
+        keyListener.update();
     }
 
     @Override

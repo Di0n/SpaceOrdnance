@@ -14,14 +14,18 @@ import java.io.IOException;
 
 public class SpaceShip extends _GameObject
 {
-    private final int SHOOT_TIMEOUT = 50; // ms
+    private final long SHOOT_TIMEOUT = 50; // ms
+    private long lastShotFired;
     private int lives;
+    private BufferedImage laserImage;
 
 
-    public SpaceShip(BufferedImage image, double scale, int lives)
+    public SpaceShip(BufferedImage image, double scale, int lives, BufferedImage laserImage)
     {
         super(image, scale);
         this.lives = lives;
+        this.lastShotFired = 0;
+        this.laserImage = laserImage;
 
         addFixture(Geometry.createRectangle(image.getWidth()*scale, image.getHeight()*scale));
         //getTransform().setTranslation(new Vector2(0 * scale, 0*scale));
@@ -30,19 +34,29 @@ public class SpaceShip extends _GameObject
         setAngularDamping(5);
     }
 
+
     public void update(double deltaTime)
     {
 
     }
 
-    public void shoot()
+    public Laser shoot()
     {
+        if ((System.currentTimeMillis() - lastShotFired) < SHOOT_TIMEOUT) return; // Zorg dat de speler niet te veel lasers achter elkaar kan schieten
+
+        final Vector2 shipRotation = new Vector2(this.getTransform().getRotation() + Math.PI * 0.5); // Voorkant schip
+
 
     }
 
     public void explode()
     {
 
+    }
+
+    public long getLastShotFiredTime()
+    {
+        return lastShotFired;
     }
 
     /*

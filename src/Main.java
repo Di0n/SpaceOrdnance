@@ -143,7 +143,7 @@ public class Main extends Game implements ActionListener, MouseListener
             }
         }
 
-        if (!keyListener.getPressedKeys().isEmpty())
+       /* if (!keyListener.getPressedKeys().isEmpty())
         {
 
             final Vector2 shipRotation = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5); // Voorkant schip
@@ -185,7 +185,7 @@ public class Main extends Game implements ActionListener, MouseListener
                 //ship.applyForce(f1);
                 //ship.applyForce(f2);
             }
-        }
+        }*/
     }
 
     @Override
@@ -300,7 +300,7 @@ public class Main extends Game implements ActionListener, MouseListener
                 System.out.printf("collision ship lives: "+ship.getLives());
             }
         }
-
+/*
         if (!keyListener.getPressedKeys().isEmpty())
         {
             final double force = 500 * deltaTime;
@@ -342,7 +342,7 @@ public class Main extends Game implements ActionListener, MouseListener
                 //ship.applyForce(f1);
                 //ship.applyForce(f2);
             }
-        }
+        }*/
         repaint();
     }
 
