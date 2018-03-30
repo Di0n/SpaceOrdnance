@@ -7,13 +7,13 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-public abstract class _GameObject extends Body
+public abstract class GameObject extends Body
 {
     protected BufferedImage image;
     protected double scale;
     protected boolean visible;
 
-    public _GameObject(BufferedImage image, double scale)
+    public GameObject(BufferedImage image, double scale)
     {
         this.image = image;
         this.scale = scale;
@@ -37,16 +37,6 @@ public abstract class _GameObject extends Body
     public boolean isVisible()
     {
         return visible;
-    }
-
-    public void setPosition(Vector2 position)
-    {
-        getTransform().setTranslation(new Vector2(position.x * scale, position.y * scale));
-    }
-
-    public Vector2 getPosition()
-    {
-        return new Vector2(getTransform().getTranslation().x * scale, getTransform().getTranslation().y * scale);
     }
 
     public BufferedImage getImage()
