@@ -160,7 +160,7 @@ public class SpaceOrdnance extends Game
                 respawn();
             }*/
 
-            List<Body> bodies = asteroid.getInContactBodies(true);
+            List<Body> bodies = asteroid.getInContactBodies(false);
 
             for (Body body : bodies)
             {
@@ -189,7 +189,7 @@ public class SpaceOrdnance extends Game
         }
         if (keyListener.isKeyDown(KeyEvent.VK_RIGHT))
         {
-            final double force = 10 * deltaTime;
+            final double force = 5 * deltaTime;
             Vector2 f1 = shipRotation.product(force ).left();
             Vector2 f2 = shipRotation.product(force ).right();
 
@@ -198,7 +198,7 @@ public class SpaceOrdnance extends Game
 
         if (keyListener.isKeyDown(KeyEvent.VK_LEFT))
         {
-            final double force = -10 * deltaTime;
+            final double force = -5 * deltaTime;
             Vector2 f1 = shipRotation.product(force).right();
             Vector2 f2 = shipRotation.product(force).left();
 
