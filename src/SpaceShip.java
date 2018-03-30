@@ -1,4 +1,5 @@
 import javafx.scene.control.Button;
+import org.dyn4j.collision.CategoryFilter;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Mass;
 import org.dyn4j.geometry.MassType;
@@ -17,21 +18,23 @@ public class SpaceShip extends _GameObject
     private final long SHOOT_TIMEOUT = 50; // ms
     private long lastShotFired;
     private int lives;
-    private BufferedImage laserImage;
+    private BufferedImage laserTexture;
 
 
-    public SpaceShip(BufferedImage image, double scale, int lives, BufferedImage laserImage)
+    public SpaceShip(BufferedImage image, double scale, int lives, BufferedImage laserTexture)
     {
         super(image, scale);
         this.lives = lives;
         this.lastShotFired = 0;
-        this.laserImage = laserImage;
+        this.laserTexture = laserTexture;
 
         addFixture(Geometry.createRectangle(image.getWidth()*scale, image.getHeight()*scale));
         //getTransform().setTranslation(new Vector2(0 * scale, 0*scale));
         setMass(MassType.NORMAL);
         //setMass(new Mass(new Vector2(0,0), 20, 10));
         setAngularDamping(5);
+
+        getFixture(0).setFilter(new CategoryFilter(1,1));
     }
 
 
@@ -42,11 +45,20 @@ public class SpaceShip extends _GameObject
 
     public Laser shoot()
     {
-        if ((System.currentTimeMillis() - lastShotFired) < SHOOT_TIMEOUT) return; // Zorg dat de speler niet te veel lasers achter elkaar kan schieten
+       // if ((System.currentTimeMillis() - lastShotFired) < SHOOT_TIMEOUT) return; // Zorg dat de speler niet te veel lasers achter elkaar kan schieten
 
-        final Vector2 shipRotation = new Vector2(this.getTransform().getRotation() + Math.PI * 0.5); // Voorkant schip
+        final double shipFront = this.getTransform().getRotation() + Math.PI * 0.5;  // Voorkant schip
+        final Vector2 shipRotation = new Vector2(shipFront);
+        Laser laser = new Laser(laserTexture, 0.009, 4000);
 
+        laser.getTransform().setTranslation(getTransform().getTranslation().copy());
 
+        laser.getTransform().setRotation(shipFront);
+        final double force = 80;
+        Vector2 forceVec = shipRotation.product(force);
+        laser.applyForce(forceVec);
+        lastShotFired = System.currentTimeMillis();
+        return laser;
     }
 
     public void explode()
@@ -57,6 +69,16 @@ public class SpaceShip extends _GameObject
     public long getLastShotFiredTime()
     {
         return lastShotFired;
+    }
+
+    public int getLives()
+    {
+        return lives;
+    }
+
+    public void setLives(int lives)
+    {
+        this.lives = lives;
     }
 
     /*
@@ -86,14 +108,4 @@ public class SpaceShip extends _GameObject
             lastExplosionDrawTime = time;
         }
     }*/
-
-    public int getLives()
-    {
-        return lives;
-    }
-
-    public void setLives(int lives)
-    {
-        this.lives = lives;
-    }
 }

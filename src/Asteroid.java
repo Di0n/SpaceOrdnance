@@ -1,3 +1,6 @@
+import org.dyn4j.collision.CategoryFilter;
+import org.dyn4j.collision.Filter;
+import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Mass;
 import org.dyn4j.geometry.MassType;
@@ -18,13 +21,12 @@ public class Asteroid extends _GameObject
 
     private Size asteroidSize;
 
-    public Asteroid(BufferedImage image, double scale, Vector2 position, Size size)
+    public Asteroid(BufferedImage image, double scale)
     {
         super(image, scale);
-        asteroidSize = size;
-
+        //asteroidSize = size;
         addFixture(Geometry.createCircle(Math.max((image.getWidth()/2)*scale, (image.getHeight()/2)*scale)));
-        getTransform().setTranslation(new Vector2(position.x * scale, position.y * scale));
+        //getTransform().setTranslation(new Vector2(position.x * scale, position.y * scale));
         setMass(MassType.NORMAL);
 
         /*switch (size)

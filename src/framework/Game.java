@@ -132,6 +132,7 @@ public abstract class Game extends JFrame
      */
     protected abstract void loadContent();
 
+
     public synchronized void stop()
     {
         closing = true;
