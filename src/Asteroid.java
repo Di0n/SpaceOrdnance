@@ -21,26 +21,11 @@ public class Asteroid extends _GameObject
 
     private Size asteroidSize;
 
-    public Asteroid(BufferedImage image, double scale)
+    public Asteroid(BufferedImage image, double scale, Size asteroidSize)
     {
         super(image, scale);
-        //asteroidSize = size;
+        this.asteroidSize = asteroidSize;
         addFixture(Geometry.createCircle(Math.max((image.getWidth()/2)*scale, (image.getHeight()/2)*scale)));
-        //getTransform().setTranslation(new Vector2(position.x * scale, position.y * scale));
         setMass(MassType.NORMAL);
-
-        /*switch (size)
-        {
-            case SMALL:
-                setMass(new Mass(new Vector2(position.x*scale, position.y*scale), 150, 25));
-                break;
-            case MEDIUM:
-                setMass(new Mass(new Vector2(position.x*scale, position.y*scale), 300, 15));
-                break;
-            case LARGE:
-                setMass(new Mass(new Vector2(position.x*scale, position.y*scale), 600, 5));
-                break;
-        }*/
     }
-
 }

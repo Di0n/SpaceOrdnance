@@ -29,12 +29,9 @@ public class SpaceShip extends _GameObject
         this.laserTexture = laserTexture;
 
         addFixture(Geometry.createRectangle(image.getWidth()*scale, image.getHeight()*scale));
-        //getTransform().setTranslation(new Vector2(0 * scale, 0*scale));
         setMass(MassType.NORMAL);
-        //setMass(new Mass(new Vector2(0,0), 20, 10));
         setAngularDamping(5);
-
-        getFixture(0).setFilter(new CategoryFilter(1,1));
+        getFixture(0).setFilter(new CategoryFilter(CollisionFilter.COLLISION_SHIPS, CollisionFilter.COLLISION_ASTEROIDS | CollisionFilter.COLLISION_SHIPS)); // Laat schepen niet op lazers botsen
     }
 
 
@@ -45,11 +42,9 @@ public class SpaceShip extends _GameObject
 
     public Laser shoot()
     {
-       // if ((System.currentTimeMillis() - lastShotFired) < SHOOT_TIMEOUT) return; // Zorg dat de speler niet te veel lasers achter elkaar kan schieten
-
         final double shipFront = this.getTransform().getRotation() + Math.PI * 0.5;  // Voorkant schip
         final Vector2 shipRotation = new Vector2(shipFront);
-        Laser laser = new Laser(laserTexture, 0.009, 4000);
+        Laser laser = new Laser(laserTexture, 0.009, 3000);
 
         laser.getTransform().setTranslation(getTransform().getTranslation().copy());
 

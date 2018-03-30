@@ -63,9 +63,10 @@ public abstract class Game extends JFrame
 
     public void run()
     {
+        setVisible(true);
+
         loadContent();
 
-        setVisible(true);
         lastTime = System.nanoTime();
 
         canvas.setIgnoreRepaint(true);
@@ -79,6 +80,8 @@ public abstract class Game extends JFrame
               {
                   gameLoop();
                   Thread.yield();
+
+                  //try {Thread.sleep(10);} catch (InterruptedException ix) {}
               }
           }
         };

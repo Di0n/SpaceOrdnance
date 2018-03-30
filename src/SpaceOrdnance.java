@@ -8,6 +8,7 @@ import org.dyn4j.dynamics.Force;
 import org.dyn4j.dynamics.World;
 import org.dyn4j.dynamics.contact.ContactPoint;
 import org.dyn4j.geometry.Mass;
+import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
 
 import javax.imageio.ImageIO;
@@ -50,7 +51,6 @@ public class SpaceOrdnance extends Game
     private int level;
     // GRAPHICS
     private ArrayList<BufferedImage> smallAsteroidImages = new ArrayList<>();
-    private ArrayList<BufferedImage> mediumAsteroidImages = new ArrayList<>();
     private ArrayList<BufferedImage> largeAsteroidImages = new ArrayList<>();
     private ArrayList<ExplosionAnimation> explosions = new ArrayList<>();
 
@@ -68,62 +68,30 @@ public class SpaceOrdnance extends Game
     }
 
     @Override
-    protected void loadContent()
-    {
-        explosionImages = new BufferedImage[64];
-        BufferedImage laserImage = null;
-
-        try
-        {
-            background = ImageIO.read(getClass().getResource("/images/Backgrounds/bg5.jpg"));
-            shipImage = ImageIO.read(getClass().getResource("/images/Ships/pack/1.png"));
-
-            //File asteroidDir = new File(String.valueOf(getClass().getResource("/images/Asteroids")));
-
-            /*File asteroidDir = new File("D:\\Libraries\\Documents\\GitHub\\SpaceOrdnance\\resources\\images\\Asteroids");
-            File[] dirListing = asteroidDir.listFiles();
-            for (File dir : dirListing)
-            {
-                File[] categoryDir = dir.listFiles();
-                for (File file : categoryDir)
-                {
-                    if (dir.getName().equals("small-asteroids"))
-                        smallAsteroidImages.add(ImageIO.read(getClass().getResource(String.format("%s/small-asteroids/%s", ASTEROID_IMAGE_RSC_PATH, file.getName()))));
-                    else if (dir.getName().equals("medium-asteroids"))
-                        mediumAsteroidImages.add(ImageIO.read(getClass().getResource(String.format("%s/medium-asteroids/%s", ASTEROID_IMAGE_RSC_PATH, file.getName()))));
-                    else if (dir.getName().equals("large-asteroids"))
-                        largeAsteroidImages.add(ImageIO.read(getClass().getResource(String.format("%s/large-asteroids/%s", ASTEROID_IMAGE_RSC_PATH, file.getName()))));
-                    break;
-                }
-            }*/
-            mediumAsteroidImages.add(ImageIO.read(getClass().getResource("/images/Asteroids/large-asteroids/Asteroid-A-09-000.png")));
-
-            BufferedImage shipExplosionImages = ImageIO.read(getClass().getResource("/images/FX/explosions/explosion_4.png"));
-            for (int i = 0; i < 64; i++)
-            {
-                explosionImages[i] = shipExplosionImages.getSubimage(512 * (i%8), 512 * (i/8), 512, 512);
-            }
-
-            laserImage = ImageIO.read(getClass().getResource("/images/FX/projectiles/red_laser.png"));
-        }
-        catch (IOException ex) { ex.printStackTrace(); }
-
-
-        ship = new SpaceShip(shipImage, 0.007, 3, laserImage);
-
-        reset();
-    }
-
-    @Override
     protected void update(double deltaTime)
     {
         world.update(deltaTime);
 
-        for (Iterator<Body> it = world.getBodyIterator(); it.hasNext();)
+        for (Iterator<Body> it = world.getBodies().iterator(); it.hasNext();)
         {
-            _GameObject object = (_GameObject)it.next();
+            _GameObject gameObject = (_GameObject)it.next();
+            Transform transform = gameObject.getTransform();
 
+            if (transform.getTranslationX() + (gameObject.getImage().getWidth()*gameObject.getScale() / 2) < 0 )
+                transform.setTranslation(getWidth()/worldScale, transform.getTranslationY());
+            else if (transform.getTranslationX() - (gameObject.getImage().getWidth() * gameObject.getScale() / 2)  > getWidth() / worldScale)
+                transform.setTranslation(0, transform.getTranslationY());
+            if (transform.getTranslationY() + (gameObject.getImage().getHeight() * gameObject.getScale() / 2) < 0)
+                transform.setTranslation(transform.getTranslationX(), getHeight() / worldScale);
+            else if (transform.getTranslationY() - (gameObject.getImage().getHeight() * gameObject.getScale() / 2) > getHeight() / worldScale)
+                transform.setTranslation(transform.getTranslationX(), 0);
+
+            if (gameObject instanceof Asteroid)
+                ;
+            else if (gameObject instanceof Laser)
+                ;
         }
+
         for (Iterator<ExplosionAnimation> iterator = explosions.iterator(); iterator.hasNext(); )
         {
             ExplosionAnimation explosion = iterator.next();
@@ -164,10 +132,11 @@ public class SpaceOrdnance extends Game
 
             for (Body body : bodies)
             {
-                if (body instanceof SpaceShip)
-                    System.out.println("SS Found!");
-                else if (body instanceof Laser)
-                    System.out.println( "Hit by laser");
+                _GameObject object = (_GameObject)body;
+                if (object instanceof SpaceShip)
+                    System.out.println("SS");
+                else if (object instanceof Laser)
+                    System.out.println("Lazer");
             }
         }
 
@@ -250,7 +219,10 @@ public class SpaceOrdnance extends Game
         }
         if (debug)
         {
-             DebugDraw.draw(g2d,world, worldScale);
+            Color clr = g2d.getColor();
+            g2d.setColor(Color.YELLOW);
+            DebugDraw.draw(g2d,world, worldScale);
+            g2d.setColor(clr);
         }
     }
 
@@ -265,7 +237,7 @@ public class SpaceOrdnance extends Game
     private void reset()
     {
         world.removeAllBodiesAndJoints();
-        Asteroid asteroid = new Asteroid(mediumAsteroidImages.get(0), 0.02);
+        Asteroid asteroid = new Asteroid(largeAsteroidImages.get(0), 0.015, Asteroid.Size.LARGE);
         asteroid.getTransform().setTranslation((1920 / 3)/worldScale, (1080 / 2)/worldScale);
 
 
@@ -276,10 +248,50 @@ public class SpaceOrdnance extends Game
         level = 1;
     }
 
-
-    // GRAFISCHE OBJECTEN INLADEN
-    private void loadImages()
+    @Override
+    protected void loadContent()
     {
+        explosionImages = new BufferedImage[64];
+        BufferedImage laserImage = null;
 
+        try
+        {
+            background = ImageIO.read(getClass().getResource("/images/Backgrounds/bg5.jpg"));
+            shipImage = ImageIO.read(getClass().getResource("/images/Ships/pack/1.png"));
+
+            //File asteroidDir = new File(String.valueOf(getClass().getResource("/images/Asteroids")));
+
+            /*File asteroidDir = new File("D:\\Libraries\\Documents\\GitHub\\SpaceOrdnance\\resources\\images\\Asteroids");
+            File[] dirListing = asteroidDir.listFiles();
+            for (File dir : dirListing)
+            {
+                File[] categoryDir = dir.listFiles();
+                for (File file : categoryDir)
+                {
+                    if (dir.getName().equals("small-asteroids"))
+                        smallAsteroidImages.add(ImageIO.read(getClass().getResource(String.format("%s/small-asteroids/%s", ASTEROID_IMAGE_RSC_PATH, file.getName()))));
+                    else if (dir.getName().equals("medium-asteroids"))
+                        mediumAsteroidImages.add(ImageIO.read(getClass().getResource(String.format("%s/medium-asteroids/%s", ASTEROID_IMAGE_RSC_PATH, file.getName()))));
+                    else if (dir.getName().equals("large-asteroids"))
+                        largeAsteroidImages.add(ImageIO.read(getClass().getResource(String.format("%s/large-asteroids/%s", ASTEROID_IMAGE_RSC_PATH, file.getName()))));
+                    break;
+                }
+            }*/
+            largeAsteroidImages.add(ImageIO.read(getClass().getResource("/images/Asteroids/large-asteroids/Asteroid-A-09-000.png")));
+
+            BufferedImage shipExplosionImages = ImageIO.read(getClass().getResource("/images/FX/explosions/explosion_4.png"));
+            for (int i = 0; i < 64; i++)
+            {
+                explosionImages[i] = shipExplosionImages.getSubimage(512 * (i%8), 512 * (i/8), 512, 512);
+            }
+
+            laserImage = ImageIO.read(getClass().getResource("/images/FX/projectiles/red_laser.png"));
+        }
+        catch (IOException ex) { ex.printStackTrace(); }
+
+
+        ship = new SpaceShip(shipImage, 0.007, 3, laserImage);
+
+        reset();
     }
 }

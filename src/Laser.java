@@ -12,6 +12,7 @@ public class Laser extends _GameObject
 {
     private long timeToLive;
     private long creationTime;
+    private int maxTravelDistance = 2000; // 1 pixel is 100 meter
 
     public Laser(BufferedImage image, double scale, long timeToLive)
     {
@@ -21,8 +22,7 @@ public class Laser extends _GameObject
         //setBullet(true);
         this.timeToLive = timeToLive;
         this.creationTime = System.currentTimeMillis();
-        //setMass(new Mass(getTransform().getTranslation(), image.getWidth() * scale, 25));
-        getFixture(0).setFilter(new CategoryFilter(2,2)); // Laat lazers niet met schip botsen
+        getFixture(0).setFilter(new CategoryFilter(CollisionFilter.COLLISION_LASERS, CollisionFilter.COLLISION_ASTEROIDS)); // Laat lazers niet met schepen en andere lazers botsen
     }
 
     public long getTimeToLive()

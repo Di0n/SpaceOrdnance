@@ -49,6 +49,11 @@ public abstract class _GameObject extends Body
         return new Vector2(getTransform().getTranslation().x * scale, getTransform().getTranslation().y * scale);
     }
 
+    public BufferedImage getImage()
+    {
+        return image;
+    }
+
     public void draw(Graphics2D g2d, double worldScale)
     {
         if(image == null || !visible)
