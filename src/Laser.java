@@ -1,14 +1,10 @@
 import org.dyn4j.collision.CategoryFilter;
 import org.dyn4j.geometry.Geometry;
-import org.dyn4j.geometry.Mass;
 import org.dyn4j.geometry.MassType;
-import org.dyn4j.geometry.Vector2;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 
-public class Laser extends _GameObject
+public class Laser extends GameObject
 {
     private long timeToLive;
     private long creationTime;

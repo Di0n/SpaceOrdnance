@@ -1,24 +1,13 @@
 import framework.Game;
 import framework.GameKeyListener;
-import javafx.scene.control.Button;
-import org.dyn4j.Listener;
-import org.dyn4j.collision.CategoryFilter;
 import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.Force;
-import org.dyn4j.dynamics.World;
-import org.dyn4j.dynamics.contact.ContactPoint;
-import org.dyn4j.geometry.Mass;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,6 +23,7 @@ public class SpaceOrdnance extends Game
     // INSTELLINGEN
     private static final int FPS = 144;
     private static final String ASTEROID_IMAGE_RSC_PATH = "/images/Asteroids";
+    private static final int FIRE_TIMEOUT = 500;
 
     // DEBUG
     private boolean debug;
@@ -54,9 +44,10 @@ public class SpaceOrdnance extends Game
     private ArrayList<BufferedImage> largeAsteroidImages = new ArrayList<>();
     private ArrayList<ExplosionAnimation> explosions = new ArrayList<>();
 
-    private BufferedImage[] explosionImages;
+    private BufferedImage[][] explosionImages;
     private BufferedImage background;
     private BufferedImage shipImage;
+    private BufferedImage bbb[];
 
     // GAME START
     public SpaceOrdnance()
@@ -72,9 +63,10 @@ public class SpaceOrdnance extends Game
     {
         world.update(deltaTime);
 
-        for (Iterator<Body> it = world.getBodies().iterator(); it.hasNext();)
+        List<Body> removeList = new ArrayList<>();
+        for (Body body : world.getBodies())
         {
-            _GameObject gameObject = (_GameObject)it.next();
+            GameObject gameObject = (GameObject)body;
             Transform transform = gameObject.getTransform();
 
             if (transform.getTranslationX() + (gameObject.getImage().getWidth()*gameObject.getScale() / 2) < 0 )
@@ -87,10 +79,39 @@ public class SpaceOrdnance extends Game
                 transform.setTranslation(transform.getTranslationX(), 0);
 
             if (gameObject instanceof Asteroid)
-                ;
-            else if (gameObject instanceof Laser)
-                ;
+            {
+                Asteroid asteroid = (Asteroid)gameObject;
+
+                List<Body> bodies = asteroid.getInContactBodies(false);
+
+                for (Body hitBody : bodies)
+                {
+                    if (hitBody instanceof SpaceShip)
+                    {
+                        BufferedImage[] img = explosionImages[0];
+                        ExplosionAnimation ea = new ExplosionAnimation(img, ship.getTransform().getTranslation(), ship.getScale());
+                        ea.start();
+                        explosions.add(ea);
+                        ship.setLives(ship.getLives()-1);
+                        respawn();
+                    }
+                    else if (hitBody instanceof Laser)
+                    {
+                        Laser laser = (Laser)hitBody;
+                        ExplosionAnimation ea = new ExplosionAnimation(bbb, new Vector2( asteroid.getTransform().getTranslationX(), ship.getTransform().getTranslationY()), asteroid.getScale());
+                        ea.start();
+                        explosions.add(ea);
+                        lasers.remove(laser);
+                        asteroids.remove(asteroid);
+
+                        removeList.add(laser);
+                        removeList.add(asteroid);
+                    }
+                }
+            }
         }
+
+        removeList.forEach(b -> world.removeBody(b));
 
         for (Iterator<ExplosionAnimation> iterator = explosions.iterator(); iterator.hasNext(); )
         {
@@ -114,31 +135,6 @@ public class SpaceOrdnance extends Game
             }
         }
 
-        for (Iterator<Asteroid> it = asteroids.iterator(); it.hasNext(); )
-        {
-            Asteroid asteroid = it.next();
-           /* if (ship.isInContact(asteroid))
-            {
-                ExplosionAnimation ea = new ExplosionAnimation(explosionImages, new Point2D.Double(ship.getTransform().getTranslationX(),
-                        ship.getTransform().getTranslationY()), ship.getScale());
-                ea.start();
-                explosions.add(ea);
-
-                ship.setLives(ship.getLives()-1);
-                respawn();
-            }*/
-
-            List<Body> bodies = asteroid.getInContactBodies(false);
-
-            for (Body body : bodies)
-            {
-                _GameObject object = (_GameObject)body;
-                if (object instanceof SpaceShip)
-                    System.out.println("SS");
-                else if (object instanceof Laser)
-                    System.out.println("Lazer");
-            }
-        }
 
 
         final Vector2 shipRotation = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5); // Voorkant schip
@@ -176,7 +172,7 @@ public class SpaceOrdnance extends Game
 
         if (keyListener.isKeyDown(KeyEvent.VK_SPACE))
         {
-            if ((System.currentTimeMillis() - ship.getLastShotFiredTime()) >= 500)
+            if ((System.currentTimeMillis() - ship.getLastShotFiredTime()) >= FIRE_TIMEOUT)
             {
                 Laser laser = ship.shoot();
                 world.addBody(laser);
@@ -238,7 +234,7 @@ public class SpaceOrdnance extends Game
     {
         world.removeAllBodiesAndJoints();
         Asteroid asteroid = new Asteroid(largeAsteroidImages.get(0), 0.015, Asteroid.Size.LARGE);
-        asteroid.getTransform().setTranslation((1920 / 3)/worldScale, (1080 / 2)/worldScale);
+        asteroid.getTransform().setTranslation((getWidth() / 3)/worldScale, (getHeight() / 2)/worldScale);
 
 
         world.addBody(asteroid);
@@ -251,7 +247,7 @@ public class SpaceOrdnance extends Game
     @Override
     protected void loadContent()
     {
-        explosionImages = new BufferedImage[64];
+        explosionImages = new BufferedImage[4][64];
         BufferedImage laserImage = null;
 
         try
@@ -279,10 +275,22 @@ public class SpaceOrdnance extends Game
             }*/
             largeAsteroidImages.add(ImageIO.read(getClass().getResource("/images/Asteroids/large-asteroids/Asteroid-A-09-000.png")));
 
-            BufferedImage shipExplosionImages = ImageIO.read(getClass().getResource("/images/FX/explosions/explosion_4.png"));
-            for (int i = 0; i < 64; i++)
+
+
+            for (int i = 0; i < 4; i++)
             {
-                explosionImages[i] = shipExplosionImages.getSubimage(512 * (i%8), 512 * (i/8), 512, 512);
+                BufferedImage shipExplosionImages = ImageIO.read(getClass().getResource(String.format("/images/FX/explosions/explosion_%s.png", i+1)));
+                //BufferedImage shipExplosionImages = ImageIO.read(getClass().getResource("/images/FX/explosions/explosion_4.png"));
+                for (int j = 0; j < 64; j++)
+                {
+                    explosionImages[i][j] = shipExplosionImages.getSubimage(512 * (i % 8), 512 * (i / 8), 512, 512);
+                }
+            }
+            bbb = new BufferedImage[64];
+            BufferedImage shipExplosionImages = ImageIO.read(getClass().getResource("/images/FX/explosions/explosion_4.png"));
+            for (int j = 0; j < 64; j++)
+            {
+                bbb[j] = shipExplosionImages.getSubimage(512 * (j % 8), 512 * (j / 8), 512, 512);
             }
 
             laserImage = ImageIO.read(getClass().getResource("/images/FX/projectiles/red_laser.png"));

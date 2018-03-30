@@ -1,16 +1,9 @@
-import org.dyn4j.collision.CategoryFilter;
-import org.dyn4j.collision.Filter;
-import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
-import org.dyn4j.geometry.Mass;
 import org.dyn4j.geometry.MassType;
-import org.dyn4j.geometry.Vector2;
 
-import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
-public class Asteroid extends _GameObject
+public class Asteroid extends GameObject
 {
     public enum Size
     {

@@ -1,19 +1,11 @@
-import javafx.scene.control.Button;
 import org.dyn4j.collision.CategoryFilter;
 import org.dyn4j.geometry.Geometry;
-import org.dyn4j.geometry.Mass;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 
-public class SpaceShip extends _GameObject
+public class SpaceShip extends GameObject
 {
     private final long SHOOT_TIMEOUT = 50; // ms
     private long lastShotFired;
@@ -44,7 +36,7 @@ public class SpaceShip extends _GameObject
     {
         final double shipFront = this.getTransform().getRotation() + Math.PI * 0.5;  // Voorkant schip
         final Vector2 shipRotation = new Vector2(shipFront);
-        Laser laser = new Laser(laserTexture, 0.009, 3000);
+        Laser laser = new Laser(laserTexture, 0.009, 1000);
 
         laser.getTransform().setTranslation(getTransform().getTranslation().copy());
 
