@@ -1,3 +1,4 @@
+import org.dyn4j.collision.CategoryFilter;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 
@@ -20,5 +21,6 @@ public class Asteroid extends GameObject
         this.asteroidSize = asteroidSize;
         addFixture(Geometry.createCircle(Math.max((image.getWidth()/2)*scale, (image.getHeight()/2)*scale)));
         setMass(MassType.NORMAL);
+        getFixture(0).setFilter(new CategoryFilter(CollisionFilter.COLLISION_ASTEROIDS, CollisionFilter.COLLISION_LASERS | CollisionFilter.COLLISION_ASTEROIDS | CollisionFilter.COLLISION_SHIPS));
     }
 }

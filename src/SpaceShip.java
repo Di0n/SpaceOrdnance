@@ -11,6 +11,8 @@ public class SpaceShip extends GameObject
     private long lastShotFired;
     private int lives;
     private BufferedImage laserTexture;
+    private boolean destroyed;
+    private long destroyTime;
 
 
     public SpaceShip(BufferedImage image, double scale, int lives, BufferedImage laserTexture)
@@ -19,6 +21,8 @@ public class SpaceShip extends GameObject
         this.lives = lives;
         this.lastShotFired = 0;
         this.laserTexture = laserTexture;
+        this.destroyed = false;
+        this.destroyTime = 0;
 
         addFixture(Geometry.createRectangle(image.getWidth()*scale, image.getHeight()*scale));
         setMass(MassType.NORMAL);
@@ -48,9 +52,18 @@ public class SpaceShip extends GameObject
         return laser;
     }
 
-    public void explode()
+    public void setDestroyed(boolean destroyed)
     {
-
+        this.destroyed = destroyed;
+        destroyTime = destroyed ? System.currentTimeMillis() : 0;
+    }
+    public boolean isDestroyed()
+    {
+        return destroyed;
+    }
+    public long getDestroyTime()
+    {
+        return destroyTime;
     }
 
     public long getLastShotFiredTime()
@@ -67,6 +80,7 @@ public class SpaceShip extends GameObject
     {
         this.lives = lives;
     }
+
 
     /*
     public void draw(Graphics2D g2d, double worldScale)

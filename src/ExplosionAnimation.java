@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 public class ExplosionAnimation
 {
@@ -34,7 +35,7 @@ public class ExplosionAnimation
     {
         draw = false;
         final long currentTime = System.currentTimeMillis();
-        if (explode && animationIndex == explosionImages.length)
+        if (explode && animationIndex == explosionImages.length) // Length
             explode = false;
         else if (currentTime - lastDrawTime > animationDelay)
             draw = true;
