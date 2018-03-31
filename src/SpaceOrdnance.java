@@ -166,7 +166,6 @@ public class SpaceOrdnance extends Game
             respawn();
     }
 
-    private static final double MAX_SHIP_VELOCITY = 10;
     void handleUserInput(double deltaTime)
     {
         final Vector2 shipRotation = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5); // Voorkant schip
@@ -233,18 +232,8 @@ public class SpaceOrdnance extends Game
     {
         g2d.drawImage(background, 0, 0, getWidth(), getHeight(), null);
 
-        for (Asteroid asteroid : asteroids)
-        {
-            asteroid.draw(g2d, worldScale);
-        }
-
-        for (Laser laser : lasers)
-        {
-            laser.draw(g2d, worldScale);
-        }
-        ship.draw(g2d, worldScale);
-
-
+        for (Body body : world.getBodies())
+            ((GameObject) body).draw(g2d, worldScale);
 
         for (ExplosionAnimation explosion : explosions)
         {
