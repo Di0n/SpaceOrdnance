@@ -70,6 +70,7 @@ public class SpaceOrdnance extends Game
     protected void update(double deltaTime)
     {
         world.update(deltaTime);
+        handleUserInput(deltaTime); // Verwerk gebruiker input
 
         for (Iterator<ExplosionAnimation> iterator = explosions.iterator(); iterator.hasNext(); )
         {
@@ -92,8 +93,6 @@ public class SpaceOrdnance extends Game
                 continue;
             }
         }
-
-        handleUserInput(deltaTime); // Verwerk gebruiker input
 
 
         List<Body> removeList = new ArrayList<>();
@@ -213,7 +212,7 @@ public class SpaceOrdnance extends Game
                 lasers.add(laser);
             }
         }
-        if (keyListener.isKeyPressed(KeyEvent.VK_DEAD_TILDE))
+        if (keyListener.isKeyPressed(KeyEvent.VK_BACK_SLASH))
         {
             debug = !debug;
         }
