@@ -126,7 +126,7 @@ public class SpaceOrdnance extends Game
                         //BufferedImage[] img = explosionImages.get(0);
                         SpaceShip ss = (SpaceShip)hitBody;
 
-                        Vector2 impactDirection = new Vector2(ss.getTransform().getTranslationX() - asteroid.getTransform().getTranslationX(), ss.getTransform().getTranslationY() - asteroid.getTransform().getTranslationY());
+                        Vector2 impactDirection = new Vector2(asteroid.getTransform().getTranslationX() - ss.getTransform().getTranslationX(), asteroid.getTransform().getTranslationY() - ss.getTransform().getTranslationY());
 
                         ExplosionAnimation ea = new ExplosionAnimation(explosionImages[1], new Vector2(ss.getTransform().getTranslationX(), ss.getTransform().getTranslationY()), impactDirection.getDirection(), ss.getScale());
                         ea.start();
