@@ -172,22 +172,16 @@ public class SpaceOrdnance extends Game
 
         if (keyListener.isKeyDown(KeyEvent.VK_UP))
         {
-            if (!(Math.abs(ship.getLinearVelocity().x) >= MAX_SHIP_VELOCITY))
-            {
-                final double force = 300 * deltaTime;
-                Vector2 productForce = shipRotation.product(force);
-                //Vector2 p = ship.getWorldCenter().sum(shipRotation.product(-0.9));
-                ship.applyForce(productForce);
-            }
+            final double force = 300 * deltaTime;
+            Vector2 productForce = shipRotation.product(force);
+            //Vector2 p = ship.getWorldCenter().sum(shipRotation.product(-0.9));
+            ship.applyForce(productForce);
         }
         if (keyListener.isKeyDown(KeyEvent.VK_DOWN))
         {
-            if (!(Math.abs(ship.getLinearVelocity().y) >= MAX_SHIP_VELOCITY))
-            {
-                final double force = 300 * deltaTime;
-                Vector2 f = shipRotation.product(-force);
-                ship.applyForce(f);
-            }
+            final double force = 300 * deltaTime;
+            Vector2 f = shipRotation.product(-force);
+            ship.applyForce(f);
         }
         if (keyListener.isKeyDown(KeyEvent.VK_RIGHT))
         {
@@ -227,7 +221,6 @@ public class SpaceOrdnance extends Game
         if (keyListener.isKeyPressed(KeyEvent.VK_U))
         {
             System.out.println(ship.getLinearVelocity());
-            System.out.println(ship.getMass());
         }
 
         keyListener.update();
