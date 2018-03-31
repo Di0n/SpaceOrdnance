@@ -10,6 +10,7 @@ public class SpaceShip extends GameObject
     private final long SHOOT_TIMEOUT = 50; // ms
     private long lastShotFired;
     private int lives;
+    private double maxSpeed = 10;
     private BufferedImage laserTexture;
     private boolean destroyed;
     private long destroyTime;
@@ -30,10 +31,11 @@ public class SpaceShip extends GameObject
         getFixture(0).setFilter(new CategoryFilter(CollisionFilter.COLLISION_SHIPS, CollisionFilter.COLLISION_ASTEROIDS | CollisionFilter.COLLISION_SHIPS)); // Laat schepen niet op lazers botsen
     }
 
-
+    @Override
     public void update(double deltaTime)
     {
-
+        if (this.getLinearVelocity().getMagnitude() > maxSpeed) // Limiteer snelheid
+            this.setLinearVelocity(this.getLinearVelocity().getNormalized().multiply(maxSpeed));
     }
 
     public Laser shoot()
@@ -79,6 +81,16 @@ public class SpaceShip extends GameObject
     public void setLives(int lives)
     {
         this.lives = lives;
+    }
+
+    public double getMaxSpeed()
+    {
+        return maxSpeed;
+    }
+
+    public void setMaxSpeed(double maxSpeed)
+    {
+        this.maxSpeed = maxSpeed;
     }
 
 

@@ -101,6 +101,8 @@ public class SpaceOrdnance extends Game
         for (Body body : world.getBodies())
         {
             GameObject gameObject = (GameObject)body;
+            gameObject.update(deltaTime);
+
             Transform transform = gameObject.getTransform();
 
             if (transform.getTranslationX() + (gameObject.getImage().getWidth()*gameObject.getScale() / 2) < 0 )
@@ -165,7 +167,7 @@ public class SpaceOrdnance extends Game
             respawn();
     }
 
-    private static final double MAX_SHIP_VELOCITY = 6;
+    private static final double MAX_SHIP_VELOCITY = 10;
     void handleUserInput(double deltaTime)
     {
         final Vector2 shipRotation = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5); // Voorkant schip
@@ -175,6 +177,7 @@ public class SpaceOrdnance extends Game
             final double force = 300 * deltaTime;
             Vector2 productForce = shipRotation.product(force);
             //Vector2 p = ship.getWorldCenter().sum(shipRotation.product(-0.9));
+            Vector2 linear = ship.getLinearVelocity();
             ship.applyForce(productForce);
         }
         if (keyListener.isKeyDown(KeyEvent.VK_DOWN))

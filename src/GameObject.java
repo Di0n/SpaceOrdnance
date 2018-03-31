@@ -59,5 +59,6 @@ public abstract class GameObject extends Body
         g2d.drawImage(image, tx, null);
     }
 
-    public void update() {};
+
+    public void update(double deltaTime) {};
 }
