@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 
 public class SpaceShip extends GameObject
 {
-    private final long SHOOT_TIMEOUT = 50; // ms
+    private final int LINEAR_DAMPING = 100;
     private long lastShotFired;
     private int lives;
     private double maxSpeed = 10;
@@ -29,8 +29,8 @@ public class SpaceShip extends GameObject
         setMass(MassType.NORMAL);
         setAngularDamping(5);
         getFixture(0).setFilter(new CategoryFilter(CollisionFilter.COLLISION_SHIPS, CollisionFilter.COLLISION_ASTEROIDS | CollisionFilter.COLLISION_SHIPS)); // Laat schepen niet op lazers botsen
+        setLinearDamping(LINEAR_DAMPING * scale);
     }
-
     @Override
     public void update(double deltaTime)
     {

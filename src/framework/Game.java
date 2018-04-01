@@ -81,7 +81,7 @@ public abstract class Game extends JFrame
                   gameLoop();
                   //Thread.yield();
 
-                  try {Thread.sleep(5);} catch (InterruptedException ix) {}
+                  try {Thread.sleep(6);} catch (InterruptedException ix) {}
               }
           }
         };
