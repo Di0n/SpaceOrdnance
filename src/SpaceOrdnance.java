@@ -110,13 +110,13 @@ public class SpaceOrdnance extends Game
             if (gameObject.checkForBorders())
             {
                 if (transform.getTranslationX() + (gameObject.getImage().getWidth() * gameObject.getScale() / 2) < 0)
-                    transform.setTranslation(getWidth() / worldScale, transform.getTranslationY());
+                    transform.setTranslation((getWidth() / worldScale) + gameObject.getImage().getWidth() * gameObject.getScale() / 2, transform.getTranslationY());
                 else if (transform.getTranslationX() - (gameObject.getImage().getWidth() * gameObject.getScale() / 2) > getWidth() / worldScale)
                     transform.setTranslation(0 - gameObject.getImage().getWidth() * gameObject.getScale() /2, transform.getTranslationY());
                 if (transform.getTranslationY() + (gameObject.getImage().getHeight() * gameObject.getScale() / 2) < 0)
-                    transform.setTranslation(transform.getTranslationX(), getHeight() / worldScale);
+                    transform.setTranslation(transform.getTranslationX(), (getHeight() / worldScale) + gameObject.getImage().getHeight() * gameObject.getScale() / 2);
                 else if (transform.getTranslationY() - (gameObject.getImage().getHeight() * gameObject.getScale() / 2) > getHeight() / worldScale)
-                    transform.setTranslation(transform.getTranslationX(), 0);
+                    transform.setTranslation(transform.getTranslationX(), 0 - gameObject.getImage().getHeight() * gameObject.getScale() / 2);
             }
 
             if (gameObject instanceof Asteroid)
