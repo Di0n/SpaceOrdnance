@@ -20,7 +20,7 @@ public class Asteroid extends GameObject
     {
         super(image, scale);
         this.asteroidSize = asteroidSize;
-        BodyFixture fixture = new BodyFixture(Geometry.createCircle(Math.min((image.getWidth()/2)*scale, (image.getHeight()/2)*scale)));
+        BodyFixture fixture = new BodyFixture(Geometry.createCircle(Math.max((image.getWidth()/2 - 20)*scale, (image.getHeight()/2 - 20)*scale)));
         fixture.setFilter(new CategoryFilter(CollisionFilter.COLLISION_ASTEROIDS, CollisionFilter.COLLISION_LASERS | CollisionFilter.COLLISION_ASTEROIDS | CollisionFilter.COLLISION_SHIPS));
         fixture.setRestitution(1.0);
         addFixture(fixture);

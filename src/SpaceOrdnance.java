@@ -339,7 +339,7 @@ public class SpaceOrdnance extends Game
 
 
         ship = new SpaceShip(shipImage, 0.007, 3, laserImage);
-        spawner = new AsteroidSpawner(world, worldScale, 1, new BufferedImage[] {largeAsteroidImages.get(0)});
+        spawner = new AsteroidSpawner(world, worldScale, 4, new BufferedImage[] {largeAsteroidImages.get(0)});
 
         reset();
     }

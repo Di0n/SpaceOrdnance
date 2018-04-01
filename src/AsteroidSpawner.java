@@ -62,14 +62,23 @@ public class AsteroidSpawner
         switch (spawnSide)
         {
             case 1:
+            {
                 //x = random.nextInt((int)((screenWidth/worldScale) - (asteroid.getImage().getHeight() * asteroid.getScale()) / 2))+(asteroid.getImage().getHeight() * asteroid.getScale())/2;
                 x = ThreadLocalRandom.current().nextDouble(screenWidth / worldScale); //random.nextInt((int)(screenWidth / worldScale));
                 y = 0 - ((asteroid.getImage().getHeight() * asteroid.getScale()) / 2);
 
+                final double lowerX = x - forceDirection;
+                final double upperX = x + forceDirection;
 
-                direction = new Vector2(0, force);
+                double targetX = ThreadLocalRandom.current().nextDouble(lowerX, upperX);
+                Vector2 position = new Vector2(x, y);
+                Vector2 dest = new Vector2( targetX, y - forceDirection);
+                direction = position.subtract(dest).getNormalized();
+                direction.multiply(force);
                 break;
+            }
             case 2:
+            {
                 x = (screenWidth / worldScale) + ((asteroid.getImage().getWidth() * asteroid.getScale()) / 2);
                 y = ThreadLocalRandom.current().nextDouble(0, screenHeight / worldScale);
                 //y = random.nextInt((int)(screenHeight/worldScale))+1;
@@ -86,23 +95,45 @@ public class AsteroidSpawner
                 direction = position.subtract(dest).getNormalized();
                 direction.multiply(-force);
                 break;
+            }
             case 3:
+            {
                 //x = random.nextInt((int)((screenWidth/worldScale) - (asteroid.getImage().getWidth() * asteroid.getScale()) / 2))+(asteroid.getImage().getWidth() * asteroid.getScale())/2;
                 x = ThreadLocalRandom.current().nextDouble(screenWidth / worldScale); //random.nextInt((int)(screenWidth / worldScale));
-                y = (screenHeight/worldScale) + ((asteroid.getImage().getHeight() * asteroid.getScale()) /2);
-                direction = new Vector2(0, -force);
+                y = (screenHeight / worldScale) + ((asteroid.getImage().getHeight() * asteroid.getScale()) / 2);
+
+                final double lowerX = x - forceDirection;
+                final double upperX = x + forceDirection;
+
+                double targetX = ThreadLocalRandom.current().nextDouble(lowerX, upperX);
+
+                Vector2 position = new Vector2(x,y);
+                Vector2 dest = new Vector2(targetX, y - forceDirection);
+
+                direction = position.subtract(dest).getNormalized();
+                direction.multiply(-force);
                 break;
+            }
             case 4:
+            {
                 x = 0 - ((asteroid.getImage().getWidth() * asteroid.getScale()) / 2);
-                y = random.nextInt((int)(screenHeight/worldScale));
-                direction = new Vector2(force, 0);
+                y = ThreadLocalRandom.current().nextDouble(screenHeight / worldScale); //random.nextInt((int)(screenHeight/worldScale));
+
+                final double lowerY = y - forceDirection;
+                final double upperY = y + forceDirection;
+
+                double targetY = ThreadLocalRandom.current().nextDouble(lowerY, upperY);
+
+                Vector2 position = new Vector2(x,y);
+                Vector2 dest = new Vector2(x - forceDirection, targetY);
+
+                direction = position.subtract(dest).getNormalized();
+                direction.multiply(force);
                 break;
+            }
         }
 
-
-        //asteroid.getTransform().setTranslation((0 - asteroid.getImage().getWidth()) / worldScale, (screenHeight / 2)/worldScale);
         asteroid.getTransform().setTranslation(x, y);
-        //asteroid.applyForce(new Vector2(20, 0));
         asteroid.applyForce(direction);
         asteroid.applyImpulse(1);
         world.addBody(asteroid);
