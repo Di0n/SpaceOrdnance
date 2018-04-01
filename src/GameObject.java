@@ -6,18 +6,21 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.rmi.activation.ActivationGroup_Stub;
 
 public abstract class GameObject extends Body
 {
     protected BufferedImage image;
     protected double scale;
     protected boolean visible;
+    protected boolean borderCheck;
 
     public GameObject(BufferedImage image, double scale)
     {
         this.image = image;
         this.scale = scale;
         this.visible = true;
+        this.borderCheck = true;
     }
 
     public void setScale(double scale)
@@ -61,4 +64,13 @@ public abstract class GameObject extends Body
 
 
     public void update(double deltaTime) {};
+
+    public void setBorderCheck(boolean check)
+    {
+        borderCheck = check;
+    }
+    public boolean checkForBorders()
+    {
+        return borderCheck;
+    }
 }

@@ -23,4 +23,16 @@ public class Asteroid extends GameObject
         setMass(MassType.NORMAL);
         getFixture(0).setFilter(new CategoryFilter(CollisionFilter.COLLISION_ASTEROIDS, CollisionFilter.COLLISION_LASERS | CollisionFilter.COLLISION_ASTEROIDS | CollisionFilter.COLLISION_SHIPS));
     }
+
+    @Override
+    public void update(double deltaTime)
+    {
+        if (!checkForBorders()) return;
+
+    }
+
+    public Size getSize()
+    {
+        return asteroidSize;
+    }
 }

@@ -56,6 +56,8 @@ public class SpaceOrdnance extends Game
     private BufferedImage shipImage;
     private BufferedImage bbb[];
 
+    private AsteroidSpawner spawner;
+
     // GAME START
     public SpaceOrdnance()
     {
@@ -71,6 +73,7 @@ public class SpaceOrdnance extends Game
     {
         world.update(deltaTime);
         handleUserInput(deltaTime); // Verwerk gebruiker input
+        spawner.update(deltaTime, getWidth(), getHeight());
 
         for (Iterator<ExplosionAnimation> iterator = explosions.iterator(); iterator.hasNext(); )
         {
@@ -104,14 +107,17 @@ public class SpaceOrdnance extends Game
 
             Transform transform = gameObject.getTransform();
 
-            if (transform.getTranslationX() + (gameObject.getImage().getWidth()*gameObject.getScale() / 2) < 0 )
-                transform.setTranslation(getWidth()/worldScale, transform.getTranslationY());
-            else if (transform.getTranslationX() - (gameObject.getImage().getWidth() * gameObject.getScale() / 2)  > getWidth() / worldScale)
-                transform.setTranslation(0, transform.getTranslationY());
-            if (transform.getTranslationY() + (gameObject.getImage().getHeight() * gameObject.getScale() / 2) < 0)
-                transform.setTranslation(transform.getTranslationX(), getHeight() / worldScale);
-            else if (transform.getTranslationY() - (gameObject.getImage().getHeight() * gameObject.getScale() / 2) > getHeight() / worldScale)
-                transform.setTranslation(transform.getTranslationX(), 0);
+            if (gameObject.checkForBorders())
+            {
+                if (transform.getTranslationX() + (gameObject.getImage().getWidth() * gameObject.getScale() / 2) < 0)
+                    transform.setTranslation(getWidth() / worldScale, transform.getTranslationY());
+                else if (transform.getTranslationX() - (gameObject.getImage().getWidth() * gameObject.getScale() / 2) > getWidth() / worldScale)
+                    transform.setTranslation(0 - gameObject.getImage().getWidth() * gameObject.getScale() /2, transform.getTranslationY());
+                if (transform.getTranslationY() + (gameObject.getImage().getHeight() * gameObject.getScale() / 2) < 0)
+                    transform.setTranslation(transform.getTranslationX(), getHeight() / worldScale);
+                else if (transform.getTranslationY() - (gameObject.getImage().getHeight() * gameObject.getScale() / 2) > getHeight() / worldScale)
+                    transform.setTranslation(transform.getTranslationX(), 0);
+            }
 
             if (gameObject instanceof Asteroid)
             {
@@ -260,12 +266,12 @@ public class SpaceOrdnance extends Game
     void reset()
     {
         removeAllWorldObjects();
-        Asteroid asteroid = new Asteroid(largeAsteroidImages.get(0), 0.015, Asteroid.Size.LARGE);
-        asteroid.getTransform().setTranslation((getWidth() / 3)/worldScale, (getHeight() / 2)/worldScale);
+        //Asteroid asteroid = new Asteroid(largeAsteroidImages.get(0), 0.015, Asteroid.Size.LARGE);
+        //asteroid.getTransform().setTranslation((getWidth() / 3)/worldScale, (getHeight() / 2)/worldScale);
 
 
-        world.addBody(asteroid);
-        asteroids.add(asteroid);
+        //world.addBody(asteroid);
+        //asteroids.add(asteroid);
         world.addBody(ship);
         level = 1;
         ship.setLives(3);
@@ -333,6 +339,7 @@ public class SpaceOrdnance extends Game
 
 
         ship = new SpaceShip(shipImage, 0.007, 3, laserImage);
+        spawner = new AsteroidSpawner(world, worldScale, 1, new BufferedImage[] {largeAsteroidImages.get(0)});
 
         reset();
     }
