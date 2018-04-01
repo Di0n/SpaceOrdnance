@@ -33,6 +33,8 @@ public class AsteroidSpawner
 
     public void update(double deltaTime, int screenWidth, int screenHeight)
     {
+        if (numberOfAsteroids == 0) return;
+
         int largeAsteroidCount = 0;
         for (Body b : world.getBodies())
             if (b instanceof Asteroid)
@@ -137,5 +139,8 @@ public class AsteroidSpawner
         asteroid.applyForce(direction);
         asteroid.applyImpulse(1);
         world.addBody(asteroid);
+        numberOfAsteroids--;
     }
+
+
 }

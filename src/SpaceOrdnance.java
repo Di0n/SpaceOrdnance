@@ -1,3 +1,4 @@
+import framework.FrameRateCounter;
 import framework.Game;
 import framework.GameKeyListener;
 import org.dyn4j.dynamics.Body;
@@ -8,12 +9,16 @@ import org.dyn4j.geometry.Vector2;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.xml.soap.Text;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.text.Bidi;
+import java.time.chrono.HijrahDate;
 import java.util.*;
 import java.util.List;
 
@@ -35,11 +40,12 @@ public class SpaceOrdnance extends Game
     // FRAMEWORK
     ///private World world;
     private GameKeyListener keyListener;
+    private FrameRateCounter frameRateCounter = new FrameRateCounter();
 
     // GAME OBJECTS
     private SpaceShip ship;
-    private ArrayList<Asteroid> asteroids = new ArrayList<>();
-    private ArrayList<Laser> lasers = new ArrayList<>();
+    private AsteroidSpawner spawner;
+    private Hud hud;
 
     // GAME STATE
     private int level;
@@ -54,9 +60,8 @@ public class SpaceOrdnance extends Game
     private BufferedImage[][] explosionImages;
     private BufferedImage background;
     private BufferedImage shipImage;
-    private BufferedImage bbb[];
 
-    private AsteroidSpawner spawner;
+
 
     // GAME START
     public SpaceOrdnance()
@@ -65,6 +70,7 @@ public class SpaceOrdnance extends Game
         super.antiAliasing = true;
         super.addKeyboardListener(keyListener = new GameKeyListener());
         world.setGravity(new Vector2(0,0));
+        hud = new Hud();
     }
 
 
@@ -72,6 +78,7 @@ public class SpaceOrdnance extends Game
     protected void update(double deltaTime)
     {
         world.update(deltaTime);
+        frameRateCounter.update(deltaTime);
         handleUserInput(deltaTime); // Verwerk gebruiker input
         spawner.update(deltaTime, getWidth(), getHeight());
 
@@ -86,17 +93,6 @@ public class SpaceOrdnance extends Game
             explosion.update(deltaTime);
         }
 
-        for (Iterator<Laser> iterator = lasers.iterator(); iterator.hasNext(); )
-        {
-            Laser laser = iterator.next();
-            if (System.currentTimeMillis() - laser.getCreationTime() > laser.getTimeToLive())
-            {
-                world.removeBody(laser);
-                iterator.remove();
-                continue;
-            }
-        }
-
 
         List<Body> removeList = new ArrayList<>();
 
@@ -107,19 +103,22 @@ public class SpaceOrdnance extends Game
 
             Transform transform = gameObject.getTransform();
 
-            if (gameObject.checkForBorders())
-            {
-                if (transform.getTranslationX() + (gameObject.getImage().getWidth() * gameObject.getScale() / 2) < 0)
-                    transform.setTranslation((getWidth() / worldScale) + gameObject.getImage().getWidth() * gameObject.getScale() / 2, transform.getTranslationY());
-                else if (transform.getTranslationX() - (gameObject.getImage().getWidth() * gameObject.getScale() / 2) > getWidth() / worldScale)
-                    transform.setTranslation(0 - gameObject.getImage().getWidth() * gameObject.getScale() /2, transform.getTranslationY());
-                if (transform.getTranslationY() + (gameObject.getImage().getHeight() * gameObject.getScale() / 2) < 0)
-                    transform.setTranslation(transform.getTranslationX(), (getHeight() / worldScale) + gameObject.getImage().getHeight() * gameObject.getScale() / 2);
-                else if (transform.getTranslationY() - (gameObject.getImage().getHeight() * gameObject.getScale() / 2) > getHeight() / worldScale)
-                    transform.setTranslation(transform.getTranslationX(), 0 - gameObject.getImage().getHeight() * gameObject.getScale() / 2);
-            }
+            if (transform.getTranslationX() + (gameObject.getImage().getWidth() * gameObject.getScale() / 2) < 0)
+                transform.setTranslation((getWidth() / worldScale) + gameObject.getImage().getWidth() * gameObject.getScale() / 2, transform.getTranslationY());
+            else if (transform.getTranslationX() - (gameObject.getImage().getWidth() * gameObject.getScale() / 2) > getWidth() / worldScale)
+                transform.setTranslation(0 - gameObject.getImage().getWidth() * gameObject.getScale() /2, transform.getTranslationY());
+            if (transform.getTranslationY() + (gameObject.getImage().getHeight() * gameObject.getScale() / 2) < 0)
+                transform.setTranslation(transform.getTranslationX(), (getHeight() / worldScale) + gameObject.getImage().getHeight() * gameObject.getScale() / 2);
+            else if (transform.getTranslationY() - (gameObject.getImage().getHeight() * gameObject.getScale() / 2) > getHeight() / worldScale)
+                transform.setTranslation(transform.getTranslationX(), 0 - gameObject.getImage().getHeight() * gameObject.getScale() / 2);
 
-            if (gameObject instanceof Asteroid)
+            if (gameObject instanceof Laser)
+            {
+                Laser laser = (Laser)gameObject;
+                if (System.currentTimeMillis() - laser.getCreationTime() > laser.getTimeToLive())
+                    removeList.add(laser);
+            }
+            else if (gameObject instanceof Asteroid)
             {
                 Asteroid asteroid = (Asteroid)gameObject;
 
@@ -142,7 +141,6 @@ public class SpaceOrdnance extends Game
                         ship.setLives(ship.getLives()-1);
                         ship.setDestroyed(true);
 
-                        asteroids.remove(asteroid);
                         removeList.add(asteroid);
                     }
                     else if (hitBody instanceof Laser)
@@ -154,9 +152,6 @@ public class SpaceOrdnance extends Game
 
                         explosions.add(ea);
 
-                        lasers.remove(laser);
-                        asteroids.remove(asteroid);
-
                         removeList.add(laser);
                         removeList.add(asteroid);
                     }
@@ -167,7 +162,11 @@ public class SpaceOrdnance extends Game
         removeList.forEach(b -> world.removeBody(b));
 
         if (ship.getLives() <= 0)
+        {
+            Hud.TextSettings ts = new Hud().new TextSettings("GAME OVER", 50, new Point2D.Double((getWidth()/2) - 60 * 2 , getHeight()/2));
+            hud.setText(ts, 2000);
             reset();
+        }
         else if (ship.isDestroyed())
             respawn();
     }
@@ -214,7 +213,6 @@ public class SpaceOrdnance extends Game
             {
                 Laser laser = ship.shoot();
                 world.addBody(laser);
-                lasers.add(laser);
             }
         }
         if (keyListener.isKeyPressed(KeyEvent.VK_BACK_SLASH))
@@ -238,6 +236,13 @@ public class SpaceOrdnance extends Game
     {
         g2d.drawImage(background, 0, 0, getWidth(), getHeight(), null);
 
+
+
+        final int textSize = 30;
+        Hud.drawTextThisFrame(g2d, "Level "+level, textSize, new Point2D.Double(getWidth()/2, textSize + 10));
+        Hud.drawTextThisFrame(g2d, "Lives: "+ship.getLives(), textSize, new Point2D.Double(getWidth() - 150, textSize+10));
+        Hud.drawTextThisFrame(g2d, "FPS: "+Math.round(frameRateCounter.getAverageFramesPerSecond()), textSize, new Point2D.Double(30 , textSize + 10));
+
         for (Body body : world.getBodies())
             ((GameObject) body).draw(g2d, worldScale);
 
@@ -251,6 +256,8 @@ public class SpaceOrdnance extends Game
             g2d.setColor(Color.YELLOW);
             DebugDraw.draw(g2d,world, worldScale);
         }
+
+        hud.draw(g2d);
     }
 
     void respawn()
@@ -265,7 +272,7 @@ public class SpaceOrdnance extends Game
     }
     void reset()
     {
-        removeAllWorldObjects();
+        world.removeAllBodiesAndJoints();
         //Asteroid asteroid = new Asteroid(largeAsteroidImages.get(0), 0.015, Asteroid.Size.LARGE);
         //asteroid.getTransform().setTranslation((getWidth() / 3)/worldScale, (getHeight() / 2)/worldScale);
 
@@ -276,13 +283,6 @@ public class SpaceOrdnance extends Game
         level = 1;
         ship.setLives(3);
         respawn();
-    }
-
-    void removeAllWorldObjects()
-    {
-        world.removeAllBodiesAndJoints();
-        asteroids.clear();
-        lasers.clear();
     }
 
     @Override
