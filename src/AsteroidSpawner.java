@@ -1,6 +1,7 @@
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.Force;
 import org.dyn4j.dynamics.World;
+import org.dyn4j.dynamics.joint.DistanceJoint;
 import org.dyn4j.geometry.Vector2;
 
 import java.awt.image.BufferedImage;
@@ -17,23 +18,33 @@ public class AsteroidSpawner
     private final BufferedImage[] asteroidImages;
     private final double worldScale;
     private int level;
-    private int numberOfAsteroids;
+    private int asteroidsToSpawn;
     private int maxAsteroidsOnScreen;
+    private double forceMultiplier;
 
     // 10, 2
-    public AsteroidSpawner(World world, double worldScale, int level, BufferedImage[] asteroidImages)
+    public AsteroidSpawner(World world, double worldScale, BufferedImage[] asteroidImages)
     {
         this.world = world;
         this.worldScale = worldScale;
-        this.level = level;
         this.asteroidImages = asteroidImages;
-        numberOfAsteroids = level*2 + DEFAULT_ASTEROID_COUNT;
+        this.asteroidsToSpawn = 0;
+    }
+
+    public void start(int level)
+    {
+        this.level = level;
+        asteroidsToSpawn = level * 2 + DEFAULT_ASTEROID_COUNT;
         maxAsteroidsOnScreen = level + DEFAULT_LRG_ASTEROIDS_ON_SCREEN;
+    }
+    public void stop()
+    {
+        asteroidsToSpawn = 0;
     }
 
     public void update(double deltaTime, int screenWidth, int screenHeight)
     {
-        if (numberOfAsteroids == 0) return;
+        if (asteroidsToSpawn == 0) return;
 
         int largeAsteroidCount = 0;
         for (Body b : world.getBodies())
@@ -46,7 +57,10 @@ public class AsteroidSpawner
 
         if (largeAsteroidCount >= maxAsteroidsOnScreen) return;
 
-        Asteroid asteroid = new Asteroid(asteroidImages[0], ASTEROID_SIZE/worldScale, Asteroid.Size.LARGE);
+        final int arraySize = asteroidImages.length;
+        final int asteroidIndex = ThreadLocalRandom.current().nextInt(0, arraySize-1);
+
+        Asteroid asteroid = new Asteroid(asteroidImages[asteroidIndex], ASTEROID_SIZE/worldScale, Asteroid.Size.LARGE);
         /*
             Boven = 1
             Rechts = 2
@@ -138,9 +152,13 @@ public class AsteroidSpawner
         asteroid.getTransform().setTranslation(x, y);
         asteroid.applyForce(direction);
         asteroid.applyImpulse(1);
+
         world.addBody(asteroid);
-        numberOfAsteroids--;
+        asteroidsToSpawn--;
     }
 
-
+    public boolean finished()
+    {
+        return asteroidsToSpawn == 0;
+    }
 }

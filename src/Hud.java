@@ -15,12 +15,16 @@ public class Hud
         private int textSize;
         private String text;
         private Point2D location;
+        private String fontName;
+        private int fontStyle;
 
-        public TextSettings(String text, int textSize, Point2D location)
+        public TextSettings(String text, int textSize, Point2D location, String fontName, int fontStyle)
         {
             this.text = text;
             this.textSize = textSize;
             this.location = location;
+            this.fontName = fontName;
+            this.fontStyle = fontStyle;
         }
 
         public int getTextSize()
@@ -52,6 +56,26 @@ public class Hud
         {
             this.location = location;
         }
+
+        public String getFontName()
+        {
+            return fontName;
+        }
+        public void setFontName(String fontName)
+        {
+            this.fontName = fontName;
+        }
+
+        public int getFontStyle()
+        {
+            return fontStyle;
+        }
+
+        public void setFontStyle(int fontStyle)
+        {
+            this.fontStyle = fontStyle;
+        }
+
     }
 
     private Map<TextSettings, Long> textList;
@@ -65,10 +89,11 @@ public class Hud
         duration += System.currentTimeMillis();
         textList.put(ts, duration);
     }
-    public static void drawTextThisFrame(Graphics2D g2d, String text, int size, Point2D location)
+
+    public static void drawTextThisFrame(Graphics2D g2d, String text, int size, Point2D location, String fontName, int fontStyle)
     {
         AffineTransform ot = g2d.getTransform();
-        Font font = new Font("Arial", Font.PLAIN, size);
+        Font font = new Font(fontName, fontStyle, size);
         Shape shape = font.createGlyphVector(g2d.getFontRenderContext(), text).getOutline();
         g2d.setColor(Color.WHITE);
 
@@ -91,7 +116,7 @@ public class Hud
             if (System.currentTimeMillis() < duration)
             {
                 TextSettings ts = (TextSettings) pair.getKey();
-                drawTextThisFrame(g2d, ts.getText(), ts.getTextSize(), ts.getLocation());
+                drawTextThisFrame(g2d, ts.getText(), ts.getTextSize(), ts.getLocation(), ts.getFontName(), ts.getFontStyle());
             }
             else
                 it.remove();
