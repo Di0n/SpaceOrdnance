@@ -15,6 +15,7 @@ public class Asteroid extends GameObject
     }
 
     private Size asteroidSize;
+    private boolean sticky; // Sticky asteroïdes zijn asteroïdes die aan andere vast kunnen plakken op impact. Dit is een requirement voor de eindopdracht
 
     public Asteroid(BufferedImage image, double scale, Size asteroidSize)
     {
@@ -25,19 +26,25 @@ public class Asteroid extends GameObject
         fixture.setRestitution(1.0);
         addFixture(fixture);
         setMass(MassType.NORMAL);
+        sticky = false;
     }
     //addFixture(Geometry.createCircle(Math.min((image.getWidth()/2)*scale, (image.getHeight()/2)*scale)));
     //getFixture(0).setFilter(new CategoryFilter(CollisionFilter.COLLISION_ASTEROIDS, CollisionFilter.COLLISION_LASERS | CollisionFilter.COLLISION_ASTEROIDS | CollisionFilter.COLLISION_SHIPS));
 
-    @Override
-    public void update(double deltaTime)
-    {
-        if (!checkForBorders()) return;
-
-    }
 
     public Size getSize()
     {
         return asteroidSize;
     }
+
+    public void setSticky(boolean sticky)
+    {
+        this.sticky = sticky;
+    }
+
+    public boolean isSticky()
+    {
+        return sticky;
+    }
+
 }
