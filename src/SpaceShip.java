@@ -8,6 +8,10 @@ import java.awt.image.BufferedImage;
 public class SpaceShip extends GameObject
 {
     private final int LINEAR_DAMPING = 100;
+    private final int CATEGORY = CollisionFilter.COLLISION_SHIPS;
+    private final int MASK = CollisionFilter.COLLISION_ASTEROIDS | CollisionFilter.COLLISION_SHIPS;
+
+    private boolean invincible;
     private long lastShotFired;
     private int lives;
     private double maxSpeed = 10;
@@ -24,11 +28,12 @@ public class SpaceShip extends GameObject
         this.laserTexture = laserTexture;
         this.destroyed = false;
         this.destroyTime = 0;
+        this.invincible = false;
 
         addFixture(Geometry.createRectangle(image.getWidth()*scale, image.getHeight()*scale));
         setMass(MassType.NORMAL);
         setAngularDamping(5);
-        getFixture(0).setFilter(new CategoryFilter(CollisionFilter.COLLISION_SHIPS, CollisionFilter.COLLISION_ASTEROIDS | CollisionFilter.COLLISION_SHIPS)); // Laat schepen niet op lazers botsen
+        getFixture(0).setFilter(new CategoryFilter(CATEGORY, MASK)); // Laat schepen niet op lazers botsen
         setLinearDamping(LINEAR_DAMPING * scale);
     }
     @Override
@@ -91,6 +96,21 @@ public class SpaceShip extends GameObject
     public void setMaxSpeed(double maxSpeed)
     {
         this.maxSpeed = maxSpeed;
+    }
+
+    public void setInvincible(boolean invincible)
+    {
+        if (invincible)
+            this.getFixture(0).setFilter(new CategoryFilter(CollisionFilter.COLLISION_NONE, CollisionFilter.COLLISION_NONE));
+        else
+            this.getFixture(0).setFilter(new CategoryFilter(CATEGORY, MASK));
+
+        this.invincible = invincible;
+    }
+
+    public boolean isInvincible()
+    {
+        return invincible;
     }
 
 

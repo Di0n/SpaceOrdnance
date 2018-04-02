@@ -65,6 +65,7 @@ public abstract class Game extends JFrame
     {
         setVisible(true);
 
+        originalCursor = getCursor();
         loadContent();
 
         lastTime = System.nanoTime();
@@ -158,5 +159,19 @@ public abstract class Game extends JFrame
     public void addMouseListener(MouseAdapter mouseAdapter)
     {
         this.canvas.addMouseListener(mouseAdapter);
+    }
+
+    private Cursor originalCursor;
+    public void setCursorVisible(boolean visible)
+    {
+        if (!visible)
+        {
+            Toolkit tk = getToolkit();
+            Cursor transparant = tk.createCustomCursor(tk.getImage(""), new Point(), "transparant");
+            setCursor(transparant);
+        }
+        else
+            setCursor(originalCursor);
+
     }
 }

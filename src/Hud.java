@@ -94,15 +94,14 @@ public class Hud
     {
         AffineTransform ot = g2d.getTransform();
         Font font = new Font(fontName, fontStyle, size);
-        Shape shape = font.createGlyphVector(g2d.getFontRenderContext(), text).getOutline();
-        g2d.setColor(Color.WHITE);
 
         AffineTransform textLocation = new AffineTransform();
 
         textLocation.translate(location.getX(), location.getY());
 
         g2d.setTransform(textLocation);
-        g2d.draw(shape);
+        g2d.setFont(font);
+        g2d.drawString(text, 0, 0);
         g2d.setTransform(ot);
     }
     public void draw(Graphics2D g2d)

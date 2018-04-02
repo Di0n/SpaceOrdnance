@@ -44,7 +44,7 @@ public class SpaceOrdnance extends Game
     // GAME STATE
     private int level;
     private long respawnTime = 500; // MS
-    private boolean startGame;
+    private boolean gameOver;
 
     // GRAPHICS
     //private ArrayList<BufferedImage> asteroidImages;
@@ -68,7 +68,7 @@ public class SpaceOrdnance extends Game
         hud = new Hud();
         frameRateCounter = new FrameRateCounter();
         explosions = new ArrayList<>();
-        startGame = false;
+        gameOver = true;
     }
 
 
@@ -79,7 +79,7 @@ public class SpaceOrdnance extends Game
         frameRateCounter.update(deltaTime);
         handleUserInput(deltaTime); // Verwerk gebruiker input
 
-        if (asteroidSpawner.finished() && world.getBodyCount() == 1)
+        if (!gameOver && (asteroidSpawner.finished() && world.getBodyCount() == 1))
             asteroidSpawner.start(++level);
 
         asteroidSpawner.update(deltaTime, getWidth(), getHeight());
@@ -172,13 +172,10 @@ public class SpaceOrdnance extends Game
         removeBodies.forEach(b -> world.removeBody(b));
         removeJoints.forEach(j -> world.removeJoint(j));
 
-        if (ship.getLives() <= 0)
-        {
-            final int textSize = 50;
-            Hud.TextSettings ts = new Hud().new TextSettings("GAME OVER", 50, new Point2D.Double((getWidth()/2) - (textSize * 2) * 2 , getHeight()/2), "Magneto", Font.BOLD);
-            hud.setText(ts, 2000);
+        if (ship.isInvincible() && (invincibleTime - System.currentTimeMillis()) <= 0)
+            ship.setInvincible(false);
+        else if (ship.getLives() <= 0)
             reset();
-        }
         else if (ship.isDestroyed())
             respawn();
     }
@@ -221,7 +218,7 @@ public class SpaceOrdnance extends Game
     {
         final Vector2 shipRotation = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5); // Voorkant schip
 
-        if (keyListener.isKeyDown(KeyEvent.VK_UP))
+        if (keyListener.isKeyDown(KeyEvent.VK_UP) && !gameOver)
         {
             final double force = 300 * deltaTime;
             Vector2 productForce = shipRotation.product(force);
@@ -229,13 +226,13 @@ public class SpaceOrdnance extends Game
             Vector2 linear = ship.getLinearVelocity();
             ship.applyForce(productForce);
         }
-        if (keyListener.isKeyDown(KeyEvent.VK_DOWN))
+        if (keyListener.isKeyDown(KeyEvent.VK_DOWN) && !gameOver)
         {
             final double force = 300 * deltaTime;
             Vector2 f = shipRotation.product(-force);
             ship.applyForce(f);
         }
-        if (keyListener.isKeyDown(KeyEvent.VK_RIGHT))
+        if (keyListener.isKeyDown(KeyEvent.VK_RIGHT) && !gameOver)
         {
             final double force = 5 * deltaTime;
             Vector2 f1 = shipRotation.product(force ).left();
@@ -244,7 +241,7 @@ public class SpaceOrdnance extends Game
             ship.applyImpulse(force);
         }
 
-        if (keyListener.isKeyDown(KeyEvent.VK_LEFT))
+        if (keyListener.isKeyDown(KeyEvent.VK_LEFT) && !gameOver)
         {
             final double force = -5 * deltaTime;
             Vector2 f1 = shipRotation.product(force).right();
@@ -253,7 +250,7 @@ public class SpaceOrdnance extends Game
             ship.applyImpulse(force);
         }
 
-        if (keyListener.isKeyDown(KeyEvent.VK_SPACE))
+        if (keyListener.isKeyDown(KeyEvent.VK_SPACE) && !gameOver)
         {
             if ((System.currentTimeMillis() - ship.getLastShotFiredTime()) >= FIRE_TIMEOUT)
             {
@@ -261,17 +258,15 @@ public class SpaceOrdnance extends Game
                 world.addBody(laser);
             }
         }
-        if (keyListener.isKeyPressed(KeyEvent.VK_BACK_SLASH))
+        if (keyListener.isKeyPressed(KeyEvent.VK_BACK_SLASH) && !gameOver)
         {
             debug = !debug;
         }
-        if (keyListener.isKeyPressed(KeyEvent.VK_R))
+        if (keyListener.isKeyPressed(KeyEvent.VK_ENTER) && gameOver)
         {
-            reset();
-        }
-        if (keyListener.isKeyPressed(KeyEvent.VK_U))
-        {
-            System.out.println(ship.getLinearVelocity());
+            gameOver = false;
+            respawn();
+            asteroidSpawner.start(this.level);
         }
 
         keyListener.update();
@@ -296,17 +291,40 @@ public class SpaceOrdnance extends Game
             DebugDraw.draw(g2d,world, worldScale);
         }
 
+        g2d.setColor(Color.WHITE);
+        if (ship.isInvincible())
+        {
+            double x = ship.getWorldCenter().x * worldScale + ship.getImage().getWidth()/  2;
+            double y = ship.getWorldCenter().y * worldScale;
+
+
+            Hud.drawTextThisFrame(g2d, String.format("Invincible: %s", (invincibleTime - System.currentTimeMillis()) / 1000), 20, new Point2D.Double(x, y),
+                    "Calibri", Font.PLAIN);
+            Hud.drawTextThisFrame(g2d, "Lives: "+((ship.getLives() == 2) ? "II" : "I"), 20, new Point2D.Double(x, y + 20),
+                    "Calibri", Font.PLAIN);
+        }
+
         final int textSize = 30;
-        Hud.drawTextThisFrame(g2d, "Level "+level, textSize, new Point2D.Double(getWidth()/2, textSize + 10), "Arial", Font.PLAIN);
-        Hud.drawTextThisFrame(g2d, "Lives: "+ship.getLives(), textSize, new Point2D.Double(getWidth() - 150, textSize+10), "Arial", Font.PLAIN);
-        Hud.drawTextThisFrame(g2d, "FPS: "+Math.round(frameRateCounter.getAverageFramesPerSecond()), textSize, new Point2D.Double(30 , textSize + 10), "Arial", Font.PLAIN);
+        Hud.drawTextThisFrame(g2d, "Level "+level, textSize, new Point2D.Double(getWidth()/2, textSize + 10), "Magneto", Font.PLAIN);
+        Hud.drawTextThisFrame(g2d, "Lives: "+ship.getLives(), textSize, new Point2D.Double(getWidth() - 150, textSize+10), "Magneto", Font.PLAIN);
+        Hud.drawTextThisFrame(g2d, "FPS: "+Math.round(frameRateCounter.getAverageFramesPerSecond()), textSize, new Point2D.Double(30 , textSize + 10), "Magneto", Font.PLAIN);
+
+        if (gameOver)
+        {
+            final int bigTextSize = 50;
+            Hud.drawTextThisFrame(g2d, "GAME OVER", bigTextSize, new Point2D.Double((getWidth()/2) - (bigTextSize * 2) * 2,
+                    getHeight()/2), "Magneto", Font.BOLD);
+            Hud.drawTextThisFrame(g2d, "Press Enter to Start!", bigTextSize, new Point2D.Double((getWidth()/2) - (bigTextSize * 3) * 2,
+                    getHeight()/2 + bigTextSize * 2), "Magneto", Font.BOLD);
+        }
 
         hud.draw(g2d);
     }
-
+    private long invincibleTime;
     void respawn()
     {
         //ship.setPosition(new Vector2(getWidth()/2, getHeight()/2));
+        ship.setVisible(true);
         ship.clearForce();
         ship.setLinearVelocity(0,0);
         ship.setAngularVelocity(0.0);
@@ -314,6 +332,12 @@ public class SpaceOrdnance extends Game
         ship.getTransform().setRotation(Math.toRadians(180));
         ship.setDestroyed(false);
         System.out.println(ship.getLives());
+
+        if (ship.getLives() < 3) // Eerste spawn niet tellen
+        {
+            ship.setInvincible(true);
+            invincibleTime = System.currentTimeMillis() + 3000; // 3 seconden invincible
+        }
     }
     void reset()
     {
@@ -321,9 +345,10 @@ public class SpaceOrdnance extends Game
         world.addBody(ship);
         level = 1;
         ship.setLives(3);
-
-        asteroidSpawner.start(level);
-        respawn();
+        ship.setVisible(false);
+        ship.setDestroyed(false);
+        asteroidSpawner.stop();
+        gameOver = true;
     }
 
     void destroyAllWorldObjects()
@@ -350,6 +375,7 @@ public class SpaceOrdnance extends Game
             background = ImageIO.read(getClass().getResource("/images/Backgrounds/bg5.jpg"));
             shipImage = ImageIO.read(getClass().getResource("/images/Ships/pack/1.png"));
 
+            // region files
             //File asteroidDir = new File(String.valueOf(getClass().getResource("/images/Asteroids")));
 
             /*File asteroidDir = new File("D:\\Libraries\\Documents\\GitHub\\SpaceOrdnance\\resources\\images\\Asteroids");
@@ -368,33 +394,27 @@ public class SpaceOrdnance extends Game
                     break;
                 }
             }*/
+            // endregion
 
             final int asteroidBufferSize = 10;
             asteroidImages = new BufferedImage[asteroidBufferSize];
             for (int i = 0; i < asteroidBufferSize; i++)
-            {
-                System.out.println(String.format("/images/Asteroids/large-asteroids/asteroid (%s).png", i+1));
                 asteroidImages[i] = ImageIO.read(getClass().getResource(String.format("/images/Asteroids/large-asteroids/asteroid (%s).png", i+1)));
-                //asteroidImages.add(ImageIO.read(getClass().getResource(String.format("/images/Asteroids/large-asteroids/Asteroid-A-09-00%s.png", i))));
-            }
-            //asteroidImages.add(ImageIO.read(getClass().getResource("/images/Asteroids/large-asteroids/Asteroid-A-09-000.png")));
 
 
-            explosionImages = new BufferedImage[2][64];
+            final int explosionAnimations = 2;
+            final int explosionFrames = 64;
+            explosionImages = new BufferedImage[explosionAnimations][explosionFrames];
 
 
             /* 4 Werkt alleen op laptop?!?*/
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < explosionAnimations; i++)
             {
 
                 BufferedImage explosionSpriteSheet = ImageIO.read(getClass().getResource(String.format("/images/FX/explosions/explosion_%s.png", i+1)));
 
-                //BufferedImage shipExplosionImages = ImageIO.read(getClass().getResource("/images/FX/explosions/explosion_4.png"));
-                for (int j = 0; j < 64; j++)
-                {
+                for (int j = 0; j < explosionFrames; j++)
                     explosionImages[i][j] = explosionSpriteSheet.getSubimage(512 * (j % 8), 512 * (j / 8), 512, 512);
-                    // animation[j] = explosionSpriteSheet.getSubimage(512 * (i % 8), 512 * (i / 8), 512, 512);
-                }
             }
 
             laserImage = ImageIO.read(getClass().getResource("/images/FX/projectiles/red_laser.png"));
@@ -405,6 +425,7 @@ public class SpaceOrdnance extends Game
         ship = new SpaceShip(shipImage, 0.007, 3, laserImage);
         asteroidSpawner = new AsteroidSpawner(world, worldScale, asteroidImages);
 
+        setCursorVisible(false);
         reset();
     }
 }
