@@ -11,7 +11,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class AsteroidSpawner
 {
     private final int DEFAULT_ASTEROID_COUNT = 10;
-    private final int DEFAULT_LRG_ASTEROIDS_ON_SCREEN = 2;
+    private final int DEFAULT_ASTEROIDS_ON_SCREEN = 3;
     private final double ASTEROID_SIZE = 1.5;
 
     private final World world;
@@ -35,7 +35,7 @@ public class AsteroidSpawner
     {
         this.level = level;
         asteroidsToSpawn = level * 2 + DEFAULT_ASTEROID_COUNT;
-        maxAsteroidsOnScreen = level + DEFAULT_LRG_ASTEROIDS_ON_SCREEN;
+        maxAsteroidsOnScreen = level + DEFAULT_ASTEROIDS_ON_SCREEN;
     }
     public void stop()
     {
@@ -46,16 +46,18 @@ public class AsteroidSpawner
     {
         if (asteroidsToSpawn == 0) return;
 
-        int largeAsteroidCount = 0;
+
+        int asteroidCount = 0; // largeAsteroidCount = 0;
         for (Body b : world.getBodies())
             if (b instanceof Asteroid)
             {
                 Asteroid asteroid = (Asteroid)b;
-                if (asteroid.getSize() == Asteroid.Size.LARGE)
-                    largeAsteroidCount++;
+                asteroidCount++;
+                //if (asteroid.getSize() == Asteroid.Size.LARGE)
+                    //largeasteroidCount++;
             }
 
-        if (largeAsteroidCount >= maxAsteroidsOnScreen) return;
+        if (asteroidCount >= maxAsteroidsOnScreen) return;
 
         final int arraySize = asteroidImages.length;
         final int asteroidIndex = ThreadLocalRandom.current().nextInt(0, arraySize-1);
@@ -151,7 +153,8 @@ public class AsteroidSpawner
 
         asteroid.getTransform().setTranslation(x, y);
         asteroid.applyForce(direction);
-        asteroid.applyImpulse(1);
+        asteroid.applyImpulse(ThreadLocalRandom.current().nextDouble(-1, 1));
+        asteroid.setSticky(ThreadLocalRandom.current().nextInt(15) == 1 ? true : false);
 
         world.addBody(asteroid);
         asteroidsToSpawn--;

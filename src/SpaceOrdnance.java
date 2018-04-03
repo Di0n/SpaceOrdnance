@@ -4,6 +4,7 @@ import framework.GameKeyListener;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.joint.Joint;
 import org.dyn4j.dynamics.joint.RopeJoint;
+import org.dyn4j.geometry.Circle;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
 
@@ -15,6 +16,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SpaceOrdnance extends Game
 {
@@ -79,7 +81,7 @@ public class SpaceOrdnance extends Game
         frameRateCounter.update(deltaTime);
         handleUserInput(deltaTime); // Verwerk gebruiker input
 
-        if (!gameOver && (asteroidSpawner.finished() && world.getBodyCount() == 1))
+        if (!gameOver && (asteroidSpawner.finished()))
             asteroidSpawner.start(++level);
 
         asteroidSpawner.update(deltaTime, getWidth(), getHeight());
@@ -97,6 +99,7 @@ public class SpaceOrdnance extends Game
         }
 
 
+        List<Body> addBodies = new ArrayList<>();
         List<Body> removeBodies = new ArrayList<>();
         List<Joint> removeJoints = new ArrayList<>();
 
@@ -131,10 +134,7 @@ public class SpaceOrdnance extends Game
                             RopeJoint ropeJoint = new RopeJoint(asteroid, hitBody, asteroid.getTransform().getTranslation(), hitBody.getTransform().getTranslation());
                             world.addJoint(ropeJoint);
                         }
-                        // Random maken
-                       /* if (gameObject.getJoints().size() > 0 || hitBody.getJoints().size() > 0) continue;
-                        RopeJoint rj = new RopeJoint(gameObject, hitBody, gameObject.getTransform().getTranslation(), hitBody.getTransform().getTranslation());
-                        world.addJoint(rj);*/
+                        continue;
                     }
                     else if (hitBody instanceof SpaceShip)
                     {
@@ -152,12 +152,17 @@ public class SpaceOrdnance extends Game
                         ship.setDestroyed(true);
 
                         removeBodies.add(asteroid);
+
+
                     }
                     else if (hitBody instanceof Laser)
                     {
                         Laser laser = (Laser)hitBody;
 
-                        ExplosionAnimation ea = new ExplosionAnimation(explosionImages[0], new Vector2( asteroid.getTransform().getTranslationX(), asteroid.getTransform().getTranslationY()), asteroid.getTransform().getRotation(),asteroid.getScale() );
+                        ExplosionAnimation ea = new ExplosionAnimation(explosionImages[0],
+                                new Vector2( asteroid.getTransform().getTranslationX(), asteroid.getTransform().getTranslationY()),
+                                asteroid.getTransform().getRotation(),asteroid.getScale() );
+
                         ea.start();
 
                         explosions.add(ea);
@@ -165,12 +170,34 @@ public class SpaceOrdnance extends Game
                         removeBodies.add(laser);
                         removeBodies.add(asteroid);
                     }
+
+                    if (asteroid.getSize() == Asteroid.Size.SMALL) continue;
+                    if (ThreadLocalRandom.current().nextInt(4) != 1) continue;
+
+                    Asteroid smallAsteroid1 = new Asteroid(asteroidImages[ThreadLocalRandom.current().nextInt(0,
+                            asteroidImages.length-1)], 1 / worldScale, Asteroid.Size.SMALL);
+                    Asteroid smallAsteroid2 = new Asteroid(asteroidImages[ThreadLocalRandom.current().nextInt(0,
+                            asteroidImages.length-1)], 1 / worldScale, Asteroid.Size.SMALL);
+
+
+                    smallAsteroid1.getTransform().setTranslation(asteroid.getTransform().getTranslationX(), asteroid.getTransform().getTranslationY());
+                    smallAsteroid2.getTransform().setTranslation(smallAsteroid1.getTransform().getTranslationX() - 20  / worldScale,
+                            smallAsteroid1.getTransform().getTranslationY() +  20 / worldScale);
+
+                    //Vector2 direction = smallAsteroid1.getTransform().getTranslation().subtract(smallAsteroid2.getTransform().getTranslation()).getNormalized();
+
+                    smallAsteroid1.applyForce(asteroid.getLinearVelocity().multiply(ThreadLocalRandom.current().nextInt(5, 11)));
+                    smallAsteroid2.applyForce(asteroid.getLinearVelocity().getNegative().multiply(ThreadLocalRandom.current().nextInt(5, 11)));
+
+                    addBodies.add(smallAsteroid1);
+                    addBodies.add(smallAsteroid2);
                 }
             }
         }
 
         removeBodies.forEach(b -> world.removeBody(b));
         removeJoints.forEach(j -> world.removeJoint(j));
+        addBodies.forEach(b -> world.addBody(b));
 
         if (ship.isInvincible() && (invincibleTime - System.currentTimeMillis()) <= 0)
             ship.setInvincible(false);
